@@ -17,12 +17,100 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .tab-btn.active { background-color: #4f46e5; color: #ffffff; }
+        .auth-tab.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 700; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
 
+    <!-- Auth Container / ログイン & サインアップ 認証画面 -->
+    <div id="auth-container" class="flex-1 flex flex-col items-center justify-center px-4 w-full h-full my-auto py-12">
+        <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-2xl mx-auto shadow-md shadow-indigo-200 mb-3">
+                    <i data-lucide="globe" class="w-6 h-6"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight">LingoExchange</h1>
+                <p class="text-xs text-slate-500 mt-1" data-i18n="tagline">Language Exchange Platform</p>
+            </div>
+
+            <!-- ログイン / サインアップ タブ切替 -->
+            <div class="flex border-b border-slate-200 mb-6">
+                <button id="auth-tab-login" onclick="switchAuthMode('login')" class="auth-tab active flex-1 py-2 text-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition" data-i18n="auth_tab_login">
+                    🔑 ログイン (Sign In)
+                </button>
+                <button id="auth-tab-signup" onclick="switchAuthMode('signup')" class="auth-tab flex-1 py-2 text-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition" data-i18n="auth_tab_signup">
+                    📝 新規会員登録 (Sign Up)
+                </button>
+            </div>
+
+            <!-- Form: ログイン (Login) -->
+            <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="auth_email">Email / メールアドレス</label>
+                    <input type="email" id="login-email" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="user@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="auth_pass">Password / パスワード</label>
+                    <input type="password" id="login-pass" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow-sm transition mt-2 flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    <span data-i18n="btn_login_submit">ログインする</span>
+                </button>
+                <button type="button" onclick="guestLogin()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-xl text-xs transition mt-1">
+                    🚀 デモユーザーとして試す (Quick Demo)
+                </button>
+            </form>
+
+            <!-- Form: 新規会員登録 (Sign Up) -->
+            <form id="signup-form" onsubmit="handleSignupSubmit(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_name">お名前 / Full Name</label>
+                    <input type="text" id="signup-name" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="Sakura Tanaka">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="auth_email">Email / メールアドレス</label>
+                    <input type="email" id="signup-email" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="user@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="auth_pass">Password / パスワード</label>
+                    <input type="password" id="signup-pass" minlength="6" required class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="6文字以上">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1" data-i18n="prof_native">母国語 (Native)</label>
+                        <select id="signup-native" class="w-full border border-slate-200 rounded-xl px-2.5 py-2 text-xs focus:outline-none">
+                            <option value="Japanese">日本語 (Japanese)</option>
+                            <option value="English">English (英語)</option>
+                            <option value="Visayan">ビサヤ語 (Visayan)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1" data-i18n="prof_learning">学びたい言語 (Learning)</label>
+                        <select id="signup-learning" class="w-full border border-slate-200 rounded-xl px-2.5 py-2 text-xs focus:outline-none">
+                            <option value="Visayan" selected>ビサヤ語 (Visayan)</option>
+                            <option value="Japanese">日本語 (Japanese)</option>
+                            <option value="English">English (英語)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl shadow-sm transition mt-2 flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    <span data-i18n="btn_signup_submit">アカウントを作成</span>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex justify-center gap-4">
+                <button onclick="setLang('ja')" class="text-xs font-semibold text-slate-500 hover:text-indigo-600 transition flex items-center gap-1"><span class="text-base">🇯🇵</span> 日本語</button>
+                <button onclick="setLang('en')" class="text-xs font-semibold text-slate-500 hover:text-indigo-600 transition flex items-center gap-1"><span class="text-base">🇺🇸</span> English</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header / ヘッダー -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <header id="app-header" class="hidden bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('partners')">
                 <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-indigo-200">
@@ -35,17 +123,12 @@
             </div>
 
             <div class="flex items-center gap-3 sm:gap-4">
-                <!-- Language Switcher / 言語切替ボタン -->
+                <!-- UI Language Switcher -->
                 <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-                    <button onclick="setLang('ja')" id="lang-btn-ja" class="px-2.5 py-1 rounded-lg transition text-slate-700">🇯🇵 日本語</button>
-                    <button onclick="setLang('en')" id="lang-btn-en" class="px-2.5 py-1 rounded-lg transition text-slate-700">🇺🇸 English</button>
+                    <button onclick="setLang('ja')" id="lang-btn-ja" class="px-2 py-1 rounded-lg transition text-slate-700">🇯🇵 日本語</button>
+                    <button onclick="setLang('en')" id="lang-btn-en" class="px-2 py-1 rounded-lg transition text-slate-700">🇺🇸 EN</button>
                 </div>
 
-                <!-- Notification & Profile Avatar -->
-                <button class="relative p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition">
-                    <i data-lucide="bell" class="w-5 h-5"></i>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full"></span>
-                </button>
                 <div class="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer" onclick="switchTab('profile')">
                     <img id="header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-slate-200">
                     <div class="hidden md:block text-left">
@@ -53,131 +136,106 @@
                         <p class="text-[10px] text-slate-500" id="header-langs">🇯🇵 日本語 ➔ 🌴 Visayan</p>
                     </div>
                 </div>
+
+                <button onclick="handleLogout()" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
             </div>
         </div>
     </header>
 
     <!-- Main Container / メイン領域 -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
+    <main id="app-main" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-col">
 
         <!-- Navigation Tabs / ナビゲーションタブ -->
         <nav class="flex space-x-1 sm:space-x-2 bg-slate-200/70 p-1.5 rounded-2xl mb-6 self-start overflow-x-auto max-w-full custom-scrollbar">
             <button id="tab-partners" onclick="switchTab('partners')" class="tab-btn active flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition whitespace-nowrap">
                 <i data-lucide="users" class="w-4 h-4"></i>
-                <span data-i18n="nav_partners">Find Partners</span>
+                <span data-i18n="nav_partners">パートナーを探す</span>
             </button>
             <button id="tab-chat" onclick="switchTab('chat')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 whitespace-nowrap">
                 <i data-lucide="message-square" class="w-4 h-4"></i>
-                <span data-i18n="nav_chat">Chat & Tools</span>
+                <span data-i18n="nav_chat">チャット & ツール</span>
                 <span id="unread-badge" class="px-1.5 py-0.5 text-[10px] bg-indigo-600 text-white rounded-full font-bold">1</span>
             </button>
             <button id="tab-vocab" onclick="switchTab('vocab')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 whitespace-nowrap">
                 <i data-lucide="book-open" class="w-4 h-4"></i>
-                <span data-i18n="nav_vocab">Vocabulary Deck</span>
+                <span data-i18n="nav_vocab">単語帳・フレーズ</span>
             </button>
             <button id="tab-community" onclick="switchTab('community')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 whitespace-nowrap">
                 <i data-lucide="compass" class="w-4 h-4"></i>
-                <span data-i18n="nav_community">Community Q&A</span>
+                <span data-i18n="nav_community">コミュニティ Q&A</span>
             </button>
             <button id="tab-profile" onclick="switchTab('profile')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition text-slate-600 hover:text-slate-900 whitespace-nowrap">
                 <i data-lucide="user" class="w-4 h-4"></i>
-                <span data-i18n="nav_profile">Profile</span>
+                <span data-i18n="nav_profile">プロフィール</span>
             </button>
         </nav>
 
-        <!-- ================= TAB 1: パートナー検索 (Find Partners) ================= -->
+        <!-- TAB 1: パートナー検索 (Find Partners) -->
         <section id="sec-partners" class="tab-content flex-1 flex flex-col gap-6">
-            <!-- Filter Bar -->
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <!-- Search Bar -->
                     <div class="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 w-full sm:w-64">
                         <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="partner-search-input" placeholder="Search name, bio..." data-i18n-ph="search_placeholder" oninput="filterPartners()" class="bg-transparent text-sm focus:outline-none w-full">
+                        <input type="text" id="partner-search-input" placeholder="名前や自己紹介で検索..." data-i18n-ph="search_placeholder" oninput="filterPartners()" class="bg-transparent text-sm focus:outline-none w-full">
                     </div>
 
-                    <!-- Filter Native -->
                     <select id="filter-native" onchange="filterPartners()" class="bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm px-3 py-2 text-slate-700 focus:outline-none">
-                        <option value="" data-i18n="filter_native_all">Native: All Languages</option>
-                        <option value="Visayan">Visayan / Cebuano (ビサヤ語)</option>
-                        <option value="Japanese">Japanese (日本語)</option>
+                        <option value="" data-i18n="filter_native_all">母国語: すべて</option>
+                        <option value="Japanese">日本語 (Japanese)</option>
                         <option value="English">English (英語)</option>
-                        <option value="Tagalog">Tagalog (タガログ語)</option>
-                        <option value="Spanish">Spanish (スペイン語)</option>
+                        <option value="Visayan">ビサヤ語 (Visayan/Cebuano)</option>
                     </select>
 
-                    <!-- Filter Learning -->
                     <select id="filter-learning" onchange="filterPartners()" class="bg-slate-100 border border-slate-200 rounded-xl text-xs sm:text-sm px-3 py-2 text-slate-700 focus:outline-none">
-                        <option value="" data-i18n="filter_learning_all">Learning: All Languages</option>
-                        <option value="Visayan">Visayan / Cebuano (ビサヤ語)</option>
-                        <option value="Japanese">Japanese (日本語)</option>
+                        <option value="" data-i18n="filter_learning_all">学びたい言語: すべて</option>
+                        <option value="Japanese">日本語 (Japanese)</option>
                         <option value="English">English (英語)</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-2 w-full md:w-auto justify-end text-xs text-slate-500">
-                    <span data-i18n="sort_by">Sort by:</span>
-                    <select class="bg-transparent border-none text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none">
-                        <option data-i18n="sort_recommended">Recommended</option>
-                        <option data-i18n="sort_newest">Newest</option>
+                        <option value="Visayan">ビサヤ語 (Visayan/Cebuano)</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Partner Cards Grid -->
-            <div id="partner-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Rendered dynamically -->
-            </div>
+            <div id="partner-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
-        <!-- ================= TAB 2: チャット & 学習ツール (Chat & Tools) ================= -->
-        <section id="sec-chat" class="tab-content flex-1 hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[620px] flex flex-col md:flex-row">
-            <!-- Chat List Sidebar -->
+        <!-- TAB 2: チャット & 学習ツール (Chat & Tools) -->
+        <section id="sec-chat" class="tab-content flex-1 hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[580px] flex flex-col md:flex-row">
             <div class="w-full md:w-80 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col bg-slate-50/50">
                 <div class="p-4 border-b border-slate-200 font-semibold text-slate-800 flex justify-between items-center text-sm">
-                    <span data-i18n="chat_conversations">Conversations</span>
-                    <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">2 Active</span>
+                    <span data-i18n="chat_conversations">会話リスト</span>
+                    <span class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold">Live</span>
                 </div>
-                <div class="divide-y divide-slate-100 overflow-y-auto custom-scrollbar flex-1" id="chat-list">
-                    <!-- Rendered dynamically -->
-                </div>
+                <div class="divide-y divide-slate-100 overflow-y-auto custom-scrollbar flex-1" id="chat-list"></div>
             </div>
 
-            <!-- Chat Main Area -->
             <div class="flex-1 flex flex-col bg-slate-50/30">
-                <!-- Chat Active Header -->
                 <div class="px-5 py-3 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-                    <div class="flex items-center gap-3" id="active-chat-header">
-                        <!-- Partner Info Header -->
-                    </div>
+                    <div class="flex items-center gap-3" id="active-chat-header"></div>
 
-                    <!-- Action Helpers Bar -->
                     <div class="flex items-center gap-2">
-                        <!-- Visayan Phrasebook Modal Launcher -->
                         <button onclick="toggleVisayanPhrasebook()" class="flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 px-3 py-1.5 rounded-xl font-medium transition">
                             <i data-lucide="book-marked" class="w-3.5 h-3.5"></i>
-                            <span data-i18n="btn_phrasebook">Visayan Phrases</span>
+                            <span data-i18n="btn_phrasebook">ビサヤ語フレーズ</span>
                         </button>
-                        <!-- Icebreaker Topic Generator -->
                         <button onclick="generateIcebreaker()" class="flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3 py-1.5 rounded-xl font-medium transition">
                             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                            <span data-i18n="btn_icebreaker">Icebreaker Topic</span>
+                            <span data-i18n="btn_icebreaker">話題ガチャ</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Visayan Phrasebook Floating Drawer / Drawer -->
+                <!-- Visayan Phrasebook Helper Drawer -->
                 <div id="visayan-phrasebook" class="hidden bg-emerald-950 text-emerald-50 p-4 border-b border-emerald-800 shadow-inner">
                     <div class="flex justify-between items-center mb-2">
                         <div class="flex items-center gap-2 text-emerald-300 font-bold text-xs">
                             <i data-lucide="languages" class="w-4 h-4"></i>
-                            <span data-i18n="phrasebook_title">🌴 Visayan / Cebuano Quick Phrases</span>
+                            <span data-i18n="phrasebook_title">🌴 ビサヤ語（セブアノ語）日常会話フレーズ</span>
                         </div>
                         <button onclick="toggleVisayanPhrasebook()" class="text-emerald-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
                     </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs" id="phrasebook-list">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs" id="phrasebook-list"></div>
                 </div>
 
                 <!-- Icebreaker Prompt Banner -->
@@ -190,14 +248,11 @@
                 </div>
 
                 <!-- Messages Stream -->
-                <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 custom-scrollbar bg-slate-50/50">
-                    <!-- Rendered dynamically -->
-                </div>
+                <div id="chat-messages" class="flex-1 p-5 overflow-y-auto space-y-4 custom-scrollbar bg-slate-50/50"></div>
 
-                <!-- Message Input -->
                 <div class="p-4 bg-white border-t border-slate-200">
                     <form id="chat-form" onsubmit="handleSendMessage(event)" class="flex items-center gap-2">
-                        <textarea id="chat-input" rows="1" placeholder="Type a message..." data-i18n-ph="chat_placeholder" class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none custom-scrollbar"></textarea>
+                        <textarea id="chat-input" rows="1" placeholder="メッセージを入力... (Enterで送信)" data-i18n-ph="chat_placeholder" class="flex-1 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none custom-scrollbar"></textarea>
                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-medium shadow-md shadow-indigo-100 transition flex items-center justify-center">
                             <i data-lucide="send" class="w-5 h-5"></i>
                         </button>
@@ -206,128 +261,107 @@
             </div>
         </section>
 
-        <!-- ================= TAB 3: 単語帳 (Vocabulary Deck) ================= -->
+        <!-- TAB 3: 単語帳 (Vocabulary Deck) -->
         <section id="sec-vocab" class="tab-content flex-1 hidden flex flex-col gap-6">
             <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900" data-i18n="vocab_title">Vocabulary & Phrasebook Deck</h2>
-                    <p class="text-xs text-slate-500 mt-1" data-i18n="vocab_subtitle">Save, review, and practice Visayan, English, and Japanese words from chats.</p>
+                    <h2 class="text-xl font-bold text-slate-900" data-i18n="vocab_title">マイ単語帳 & フレーズカード</h2>
+                    <p class="text-xs text-slate-500 mt-1" data-i18n="vocab_subtitle">チャットや交流で出会った単語を復習できます。</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button onclick="startQuizMode()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition">
                         <i data-lucide="brain-circuit" class="w-4 h-4"></i>
-                        <span data-i18n="btn_quiz">Flashcard Quiz</span>
+                        <span data-i18n="btn_quiz">フラッシュカード復習</span>
                     </button>
                     <button onclick="openAddVocabModal()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span data-i18n="btn_add_vocab">Add Word</span>
+                        <span data-i18n="btn_add_vocab">単語を追加</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Vocab Cards Grid -->
-            <div id="vocab-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Rendered dynamically -->
-            </div>
+            <div id="vocab-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
         </section>
 
-        <!-- ================= TAB 4: コミュニティ掲示板 (Community Q&A) ================= -->
+        <!-- TAB 4: コミュニティ掲示板 (Community Q&A) -->
         <section id="sec-community" class="tab-content flex-1 hidden flex flex-col gap-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900" data-i18n="comm_title">Community Q&A & Culture Hub</h2>
-                    <p class="text-xs text-slate-500 mt-1" data-i18n="comm_subtitle">Ask questions about Cebuano idioms, Japanese grammar, or local tips.</p>
+                    <h2 class="text-xl font-bold text-slate-900" data-i18n="comm_title">コミュニティ Q&A & 文化交流</h2>
+                    <p class="text-xs text-slate-500 mt-1" data-i18n="comm_subtitle">言語や現地Tipsについて質問・投稿できます。</p>
                 </div>
                 <button onclick="openPostModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition">
                     <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                    <span data-i18n="btn_ask">Ask Question</span>
+                    <span data-i18n="btn_ask">質問を投稿する</span>
                 </button>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Post Feed -->
-                <div class="lg:col-span-2 space-y-4" id="community-feed">
-                    <!-- Rendered dynamically -->
-                </div>
+                <div class="lg:col-span-2 space-y-4" id="community-feed"></div>
 
-                <!-- Sidebar Tips -->
                 <div class="space-y-4">
                     <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                         <h3 class="font-bold text-sm text-slate-800 mb-3 flex items-center gap-2">
                             <i data-lucide="trending-up" class="w-4 h-4 text-indigo-600"></i>
-                            <span data-i18n="comm_popular_tags">Trending Topics</span>
+                            <span data-i18n="comm_popular_tags">人気の話題</span>
                         </h3>
                         <div class="flex flex-wrap gap-2">
                             <span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-lg font-semibold">#VisayanPhrases</span>
                             <span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-lg font-semibold">#JapaneseHonorifics</span>
                             <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-lg font-semibold">#CebuCulture</span>
-                            <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-lg font-semibold">#Slang</span>
                         </div>
-                    </div>
-
-                    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-md">
-                        <span class="bg-indigo-700 text-indigo-100 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider" data-i18n="comm_tip_badge">Language Tip</span>
-                        <h4 class="font-bold text-base mt-2 mb-1" data-i18n="comm_tip_title">Why learn Visayan / Cebuano?</h4>
-                        <p class="text-xs text-indigo-200 leading-relaxed" data-i18n="comm_tip_desc">Cebuano is spoken by over 20 million people in the Central & Southern Philippines (Cebu, Bohol, Davao). Learning basic greetings makes your connections much warmer!</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= TAB 5: マイプロフィール (Profile) ================= -->
+        <!-- TAB 5: プロフィール (Profile) -->
         <section id="sec-profile" class="tab-content flex-1 hidden max-w-3xl mx-auto w-full">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="h-32 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 relative"></div>
-
                 <div class="px-6 pb-6 relative">
                     <div class="flex justify-between items-end -mt-12 mb-4">
-                        <img id="profile-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" class="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-md">
+                        <img id="profile-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" class="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-md bg-white">
                         <button onclick="saveProfile()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2">
                             <i data-lucide="save" class="w-4 h-4"></i>
-                            <span data-i18n="btn_save_profile">Save Changes</span>
+                            <span data-i18n="btn_save_profile">設定を保存</span>
                         </button>
                     </div>
 
-                    <form id="profile-form" class="space-y-5">
+                    <form id="profile-form" class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_name">Full Name</label>
-                                <input type="text" id="prof-name" value="Sakura Tanaka" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_name">お名前</label>
+                                <input type="text" id="prof-name" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_location">Location</label>
-                                <input type="text" id="prof-location" value="Tokyo, Japan 🇯🇵" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_location">居住地</label>
+                                <input type="text" id="prof-location" value="Tokyo, Japan 🇯🇵" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_native">Native Language (母国語)</label>
-                                <select id="prof-native" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                                    <option value="Japanese">Japanese (日本語)</option>
-                                    <option value="Visayan">Visayan / Cebuano (ビサヤ語)</option>
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_native">母国語 (Native)</label>
+                                <select id="prof-native" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none">
+                                    <option value="Japanese">日本語 (Japanese)</option>
                                     <option value="English">English (英語)</option>
-                                    <option value="Tagalog">Tagalog (タガログ語)</option>
+                                    <option value="Visayan">ビサヤ語 (Visayan/Cebuano)</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_learning">Learning Language (学びたい言語)</label>
-                                <select id="prof-learning" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                                    <option value="Visayan" selected>Visayan / Cebuano (ビサヤ語)</option>
+                                <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_learning">学びたい言語 (Learning)</label>
+                                <select id="prof-learning" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none">
+                                    <option value="Visayan">ビサヤ語 (Visayan/Cebuano)</option>
+                                    <option value="Japanese">日本語 (Japanese)</option>
                                     <option value="English">English (英語)</option>
-                                    <option value="Japanese">Japanese (日本語)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_bio">Bio / Self Introduction</label>
-                            <textarea id="prof-bio" rows="3" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none">Konnichiwa! I live in Tokyo and am learning Cebuano/Visayan for my upcoming trip to Cebu & Davao. Happy to teach Japanese!</textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_interests">Interests (Comma separated)</label>
-                            <input type="text" id="prof-interests" value="Travel, Cebu Beaches, Anime, Coffee, Island Hopping" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                            <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="prof_bio">自己紹介 / Bio</label>
+                            <textarea id="prof-bio" rows="3" class="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:outline-none resize-none"></textarea>
                         </div>
                     </form>
                 </div>
@@ -340,111 +374,35 @@
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100">
             <h3 class="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
                 <i data-lucide="edit-3" class="w-5 h-5 text-indigo-600"></i>
-                <span data-i18n="modal_corr_title">Native Expression Correction</span>
+                <span data-i18n="modal_corr_title">自然な表現への添削</span>
             </h3>
-            <p class="text-xs text-slate-500 mb-4" data-i18n="modal_corr_desc">Provide a friendly native correction for your partner's message.</p>
-            
-            <div class="space-y-4">
-                <div>
-                    <span class="text-[11px] font-bold text-slate-400 block mb-1" data-i18n="modal_corr_orig">Original Message:</span>
-                    <p id="modal-original-text" class="text-xs bg-slate-100 p-2.5 rounded-lg text-slate-700 italic border border-slate-200"></p>
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_corr_suggest">Suggested Natural Phrasing:</label>
-                    <input type="text" id="modal-corrected-input" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_corr_notes">Explanatory Note (Optional):</label>
-                    <textarea id="modal-explanation-input" rows="2" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"></textarea>
-                </div>
+            <div class="space-y-3">
+                <p id="modal-original-text" class="text-xs bg-slate-100 p-2.5 rounded-lg text-slate-700 italic border border-slate-200"></p>
+                <input type="text" id="modal-corrected-input" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none" placeholder="修正案を入力...">
             </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <button onclick="closeCorrectionModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100" data-i18n="btn_cancel">Cancel</button>
-                <button onclick="submitCorrection()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" data-i18n="btn_send_corr">Send Correction</button>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeCorrectionModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100">Cancel</button>
+                <button onclick="submitCorrection()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700">添削を送信</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Community Post Question -->
-    <div id="post-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
-            <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <i data-lucide="help-circle" class="w-5 h-5 text-indigo-600"></i>
-                <span data-i18n="modal_post_title">Post a Question</span>
-            </h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_post_qtitle">Title</label>
-                    <input type="text" id="post-title" placeholder="e.g. How to say 'Thank you very much' in Cebuano?" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_post_details">Details</label>
-                    <textarea id="post-body" rows="3" placeholder="Context or specific phrases you want help with..." class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"></textarea>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <button onclick="closePostModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100" data-i18n="btn_cancel">Cancel</button>
-                <button onclick="submitPost()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm" data-i18n="btn_submit_post">Submit Question</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Vocab Manual Add -->
+    <!-- Modal: Vocab & Quiz Modals -->
     <div id="vocab-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
-            <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <i data-lucide="book-marked" class="w-5 h-5 text-emerald-600"></i>
-                <span data-i18n="modal_vocab_title">Add Vocabulary Item</span>
-            </h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_vocab_term">Word / Phrase</label>
-                    <input type="text" id="vocab-word" placeholder="e.g., Salamat kaayo" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_vocab_meaning">Meaning / Translation</label>
-                    <input type="text" id="vocab-meaning" placeholder="e.g., Thank you very much (本当にかんしゃ)" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-700 block mb-1" data-i18n="modal_vocab_lang">Target Language</label>
-                    <select id="vocab-lang" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none">
-                        <option value="Visayan">Visayan / Cebuano</option>
-                        <option value="Japanese">Japanese</option>
-                        <option value="English">English</option>
-                    </select>
-                </div>
+            <h3 class="text-base font-bold text-slate-900 mb-4">単語を追加</h3>
+            <div class="space-y-3">
+                <input type="text" id="vocab-word" placeholder="単語 / フレーズ (例: Salamat kaayo)" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none">
+                <input type="text" id="vocab-meaning" placeholder="意味 (例: どうもありがとう)" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none">
+                <select id="vocab-lang" class="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none">
+                    <option value="Visayan">ビサヤ語 (Visayan)</option>
+                    <option value="Japanese">日本語 (Japanese)</option>
+                    <option value="English">English (英語)</option>
+                </select>
             </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <button onclick="closeVocabModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100" data-i18n="btn_cancel">Cancel</button>
-                <button onclick="submitVocab()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm" data-i18n="btn_save">Save Word</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Flashcard Quiz Mode -->
-    <div id="quiz-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 text-center">
-            <div class="flex justify-between items-center mb-4">
-                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full" id="quiz-progress">Card 1 / 3</span>
-                <button onclick="closeQuizModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-
-            <!-- Card Front / Back Interactive Container -->
-            <div onclick="flipQuizCard()" class="bg-slate-900 text-white rounded-2xl p-8 my-4 cursor-pointer min-h-[180px] flex flex-col justify-center items-center shadow-lg transition transform hover:scale-[1.01]" id="quiz-card">
-                <p class="text-xs text-slate-400 mb-2 uppercase tracking-widest" id="quiz-lang-badge">VISAYAN</p>
-                <h3 class="text-2xl font-extrabold" id="quiz-card-term">Salamat kaayo</h3>
-                <p class="text-sm text-emerald-400 font-medium mt-3 hidden" id="quiz-card-answer">Thank you very much / どうもありがとう</p>
-                <p class="text-[10px] text-slate-500 mt-4" id="quiz-card-hint">(Tap card to reveal answer)</p>
-            </div>
-
-            <div class="flex justify-center gap-3 mt-6">
-                <button onclick="nextQuizCard(false)" class="flex-1 bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold py-2.5 rounded-xl text-xs transition" data-i18n="quiz_review">Review Again</button>
-                <button onclick="nextQuizCard(true)" class="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-2.5 rounded-xl text-xs transition" data-i18n="quiz_gotit">Got It!</button>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="closeVocabModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100">Cancel</button>
+                <button onclick="submitVocab()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700">保存</button>
             </div>
         </div>
     </div>
@@ -452,71 +410,67 @@
     <!-- Toast Banner -->
     <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
         <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>
-        <span id="toast-message" class="text-xs font-medium">Notification message</span>
+        <span id="toast-message" class="text-xs font-medium">Notification</span>
     </div>
 
-    <!-- Application Script -->
-    <script>
-        // ================= I18N DICTIONARY / 言語切替辞書 =================
-        let currentLang = 'ja';
+    <!-- Firebase App Modules & Main Application Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase Config fallback
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lingo-exchange-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : { apiKey: "demo-api-key", authDomain: "demo.firebaseapp.com", projectId: "demo-project", storageBucket: "demo.appspot.com" };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // State Variables
+        window.currentLang = 'ja';
+        window.currentUser = null;
+        window.authMode = 'login'; // 'login' or 'signup'
 
         const i18n = {
             ja: {
                 tagline: "無料言語交換プラットフォーム",
                 nav_partners: "パートナーを探す",
                 nav_chat: "チャット & ツール",
-                nav_vocab: "単語帳・フレーズ集",
+                nav_vocab: "単語帳・フレーズ",
                 nav_community: "コミュニティ Q&A",
                 nav_profile: "プロフィール",
-                search_placeholder: "名前・居住地・趣味で検索...",
+                search_placeholder: "名前や自己紹介で検索...",
                 filter_native_all: "母国語: すべて",
                 filter_learning_all: "学びたい言語: すべて",
-                sort_by: "並び替え:",
-                sort_recommended: "おすすめ順",
-                sort_newest: "新着順",
                 chat_conversations: "会話リスト",
                 btn_phrasebook: "ビサヤ語フレーズ",
                 btn_icebreaker: "話題ガチャ",
                 phrasebook_title: "🌴 ビサヤ語（セブアノ語）日常会話フレーズ",
                 chat_placeholder: "メッセージを入力... (Enterで送信)",
                 vocab_title: "マイ単語帳 & フレーズカード",
-                vocab_subtitle: "チャットや交流で出会ったビサヤ語・英語・日本語を復習できます",
+                vocab_subtitle: "チャットや交流で出会った単語を復習できます。",
                 btn_quiz: "フラッシュカード復習",
-                btn_add_vocab: "単語を手動追加",
+                btn_add_vocab: "単語を追加",
                 comm_title: "コミュニティ Q&A & 文化交流",
-                comm_subtitle: "ビサヤ語のニュアンス、日本語表現、セブ島生活など気軽に質問できます",
+                comm_subtitle: "言語や現地Tipsについて質問・投稿できます。",
                 btn_ask: "質問を投稿する",
                 comm_popular_tags: "人気の話題",
-                comm_tip_badge: "言語学習ワンポイント",
-                comm_tip_title: "なぜビサヤ語（セブアノ語）？",
-                comm_tip_desc: "セブ島、ダバオ、ボホール島などフィリピン中部・南部で2000万人以上が話す言語です。挨拶を覚えると現地の方と一気に仲良くなれます！",
                 btn_save_profile: "設定を保存",
-                prof_name: "お名前",
+                auth_tab_login: "🔑 ログイン (Sign In)",
+                auth_tab_signup: "📝 新規会員登録 (Sign Up)",
+                auth_email: "Email / メールアドレス",
+                auth_pass: "Password / パスワード",
+                btn_login_submit: "ログインする",
+                btn_signup_submit: "アカウントを作成",
+                prof_name: "お名前 / Full Name",
+                prof_native: "母国語 (Native)",
+                prof_learning: "学びたい言語 (Learning)",
                 prof_location: "居住地",
-                prof_native: "母国語 (Native Language)",
-                prof_learning: "学びたい言語 (Learning Language)",
-                prof_bio: "自己紹介",
-                prof_interests: "趣味・関心 (カンマ区切り)",
-                modal_corr_title: "自然な表現への添削",
-                modal_corr_desc: "パートナーのメッセージをより自然な表現に補正してあげましょう。",
-                modal_corr_orig: "元のメッセージ:",
-                modal_corr_suggest: "自然な修正案:",
-                modal_corr_notes: "アドバイス・補足 (任意):",
-                btn_cancel: "キャンセル",
-                btn_send_corr: "添削を送る",
-                modal_post_title: "質問を投稿",
-                modal_post_qtitle: "タイトル",
-                modal_post_details: "詳しい内容",
-                btn_submit_post: "投稿する",
-                modal_vocab_title: "単語・フレーズを登録",
-                modal_vocab_term: "単語 / フレーズ",
-                modal_vocab_meaning: "意味 / 訳",
-                modal_vocab_lang: "対象言語",
-                btn_save: "保存する",
-                quiz_review: "もう一度復習",
-                quiz_gotit: "覚えた！",
-                btn_chat_start: "チャットを始める",
-                level_label: "レベル:"
+                prof_bio: "自己紹介 / Bio",
+                modal_corr_title: "自然な表現への添削"
             },
             en: {
                 tagline: "Free Language Exchange Platform",
@@ -525,12 +479,9 @@
                 nav_vocab: "Vocabulary Deck",
                 nav_community: "Community Q&A",
                 nav_profile: "Profile",
-                search_placeholder: "Search name, location, interest...",
-                filter_native_all: "Native: All Languages",
-                filter_learning_all: "Learning: All Languages",
-                sort_by: "Sort by:",
-                sort_recommended: "Recommended",
-                sort_newest: "Newest",
+                search_placeholder: "Search name, bio...",
+                filter_native_all: "Native: All",
+                filter_learning_all: "Learning: All",
                 chat_conversations: "Conversations",
                 btn_phrasebook: "Visayan Phrases",
                 btn_icebreaker: "Icebreaker Topic",
@@ -541,737 +492,238 @@
                 btn_quiz: "Flashcard Quiz",
                 btn_add_vocab: "Add Word",
                 comm_title: "Community Q&A & Culture",
-                comm_subtitle: "Ask about Cebuano idioms, Japanese honorifics, or local culture.",
+                comm_subtitle: "Ask about Cebuano idioms, Japanese, or local travel tips.",
                 btn_ask: "Ask Question",
                 comm_popular_tags: "Trending Topics",
-                comm_tip_badge: "Language Tip",
-                comm_tip_title: "Why learn Visayan / Cebuano?",
-                comm_tip_desc: "Spoken by over 20 million people across Cebu, Davao, & Bohol in the Philippines. Simple greetings bring instant smiles!",
                 btn_save_profile: "Save Profile",
+                auth_tab_login: "🔑 Sign In",
+                auth_tab_signup: "📝 Sign Up",
+                auth_email: "Email Address",
+                auth_pass: "Password",
+                btn_login_submit: "Sign In",
+                btn_signup_submit: "Create Account",
                 prof_name: "Full Name",
-                prof_location: "Location",
                 prof_native: "Native Language",
                 prof_learning: "Learning Language",
+                prof_location: "Location",
                 prof_bio: "Self Introduction",
-                prof_interests: "Interests (Comma separated)",
-                modal_corr_title: "Native Expression Correction",
-                modal_corr_desc: "Provide a friendly native correction for your partner.",
-                modal_corr_orig: "Original Message:",
-                modal_corr_suggest: "Suggested Natural Phrasing:",
-                modal_corr_notes: "Explanatory Note (Optional):",
-                btn_cancel: "Cancel",
-                btn_send_corr: "Send Correction",
-                modal_post_title: "Post a Question",
-                modal_post_qtitle: "Title",
-                modal_post_details: "Details",
-                btn_submit_post: "Submit Question",
-                modal_vocab_title: "Add Vocabulary Item",
-                modal_vocab_term: "Word / Phrase",
-                modal_vocab_meaning: "Meaning / Translation",
-                modal_vocab_lang: "Target Language",
-                btn_save: "Save Word",
-                quiz_review: "Review Again",
-                quiz_gotit: "Got It!",
-                btn_chat_start: "Start Chat",
-                level_label: "Level:"
+                modal_corr_title: "Native Expression Correction"
             }
         };
 
-        // Visayan Phrasebook Quick Reference Data
         const visayanPhrases = [
             { ceb: "Kumusta ka?", ja: "お元気ですか？", en: "How are you?" },
             { ceb: "Maayong buntag", ja: "おはようございます", en: "Good morning" },
             { ceb: "Maayong hapon", ja: "こんにちは (午後)", en: "Good afternoon" },
             { ceb: "Salamat kaayo!", ja: "本当にありがとうございます！", en: "Thank you very much!" },
-            { ceb: "Walay sukad / Way sapayan", ja: "どういたしまして", en: "You're welcome" },
+            { ceb: "Way sapayan", ja: "どういたしまして", en: "You're welcome" },
             { ceb: "Unsa imong ngalan?", ja: "お名前は何ですか？", en: "What is your name?" },
             { ceb: "Taga asa ka?", ja: "どちらのご出身ですか？", en: "Where are you from?" },
-            { ceb: "Pila kini?", ja: "これはいくらですか？", en: "How much is this?" }
+            { ceb: "Maayo raman ko!", ja: "元気です！", en: "I am doing great!" }
         ];
 
-        // ================= MOCK DATA =================
         let partners = [
-            {
-                id: 'p1',
-                name: 'Jorelyn Tan',
-                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
-                location: 'Cebu City, Philippines 🇵🇭',
-                nativeLang: 'Visayan',
-                nativeFlag: '🌴',
-                learningLang: 'Japanese',
-                learningFlag: '🇯🇵',
-                level: 'Beginner / 初級',
-                bio: 'Maayong adlaw! I am a software engineer in Cebu. I love Japanese anime and am preparing for JLPT N4. I can teach you Cebuano / Visayan!',
-                interests: ['Cebu Travel', 'Anime', 'Programming', 'Beach'],
-                online: true
-            },
-            {
-                id: 'p2',
-                name: 'Ritchelle Davao',
-                avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200',
-                location: 'Davao City, Philippines 🇵🇭',
-                nativeLang: 'Visayan',
-                nativeFlag: '🌴',
-                learningLang: 'Japanese',
-                learningFlag: '🇯🇵',
-                level: 'Intermediate / 中級',
-                bio: 'Kumusta! Living in Davao. I enjoy talking about local Filipino food, fruits (durian!), and exchanging Japanese language practice.',
-                interests: ['Cooking', 'Mangoes', 'J-Pop', 'Culture'],
-                online: true
-            },
-            {
-                id: 'p3',
-                name: 'Kenji Sato (佐藤健二)',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
-                location: 'Tokyo, Japan 🇯🇵',
-                nativeLang: 'Japanese',
-                nativeFlag: '🇯🇵',
-                learningLang: 'Visayan',
-                learningFlag: '🌴',
-                level: 'Beginner / 初級',
-                bio: 'こんにちは！来月セブ島へダイビング旅行に行きます。ビサヤ語の基本的な挨拶や日常会話を勉強中です。日本語をお教えします！',
-                interests: ['Diving', 'Cebu Tourism', 'Ramen', 'Guitar'],
-                online: false
-            },
-            {
-                id: 'p4',
-                name: 'Mark Miller',
-                avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
-                location: 'California, USA 🇺🇸',
-                nativeLang: 'English',
-                nativeFlag: '🇺🇸',
-                learningLang: 'Japanese',
-                learningFlag: '🇯🇵',
-                level: 'Intermediate / 中級',
-                bio: 'Hey! Learning Japanese and interested in Philippine languages. Let us practice together.',
-                interests: ['Surfing', 'Gaming', 'Coffee'],
-                online: true
-            }
+            { id: 'p1', name: 'Jorelyn Tan', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200', location: 'Cebu City, Philippines 🇵🇭', nativeLang: 'Visayan', nativeFlag: '🌴', learningLang: 'Japanese', learningFlag: '🇯🇵', level: 'Beginner', bio: 'Maayong adlaw! Living in Cebu. Learning Japanese and happy to practice Cebuano/Visayan with you!', online: true },
+            { id: 'p2', name: 'Ritchelle Davao', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200', location: 'Davao City, Philippines 🇵🇭', nativeLang: 'Visayan', nativeFlag: '🌴', learningLang: 'Japanese', learningFlag: '🇯🇵', level: 'Intermediate', bio: 'Kumusta! Living in Davao. I love Japanese culture, anime, and durian fruit.', online: true },
+            { id: 'p3', name: 'Kenji Sato', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200', location: 'Tokyo, Japan 🇯🇵', nativeLang: 'Japanese', nativeFlag: '🇯🇵', learningLang: 'Visayan', learningFlag: '🌴', level: 'Beginner', bio: 'こんにちは！来月セブ島へ旅行に行きます。ビサヤ語の日常会話を練習したいです！', online: false },
+            { id: 'p4', name: 'Mark Miller', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200', location: 'California, USA 🇺🇸', nativeLang: 'English', nativeFlag: '🇺🇸', learningLang: 'Japanese', learningFlag: '🇯🇵', level: 'Intermediate', bio: 'Hey! Learning Japanese and interested in Philippine culture.', online: true }
         ];
 
         let chats = {
             'p1': [
                 { id: 'm1', sender: 'them', text: 'Maayong buntag, Sakura-san! Kumusta ka?', time: '10:15', translated: 'おはようございます、サクラさん！お元気ですか？' },
-                { id: 'm2', sender: 'me', text: 'Maayong buntag, Jorelyn! Ako ay mabuti (I am good)! Did I say that right in Visayan?', time: '10:17' },
-                { id: 'm3', sender: 'them', text: 'Haha almost! "Ako ay mabuti" is Tagalog. In Visayan, we say "Maayo raman ko!" 😊', time: '10:19', translated: '惜しい！それはタガログ語ですね。ビサヤ語では「Maayo raman ko!」と言います😊' }
-            ],
-            'p2': [
-                { id: 'm10', sender: 'them', text: 'Kumusta! If you visit Davao, let me know!', time: 'Yesterday', translated: 'こんにちは！ダバオに来る時は教えてね！' }
+                { id: 'm2', sender: 'me', text: 'Maayong buntag, Jorelyn! Maayo raman ko!', time: '10:17' }
             ]
         };
 
         let currentChatPartnerId = 'p1';
 
-        let communityPosts = [
-            {
-                id: 'post1',
-                author: 'Jorelyn Tan',
-                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
-                title: 'What is the difference between "Salamat kaayo" and "Daghang salamat"?',
-                body: 'In Cebuano / Visayan, both mean thank you very much, but "Salamat kaayo" feels more informal and hearty, while "Daghang salamat" translates literally to "Many thanks".',
-                tags: ['Visayan', 'Cebuano', 'Phrases'],
-                likes: 15,
-                comments: 3,
-                time: '1 hour ago'
-            },
-            {
-                id: 'post2',
-                author: 'Kenji Sato',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
-                title: 'セブ島でのおすすめローカルレストランを教えてください！',
-                body: '来月セブ市内に滞在します。レチョン（Lechon）やポチェロ（Pochero）が美味しいローカルなお店があれば知りたいです。',
-                tags: ['CebuFood', 'TravelTips'],
-                likes: 8,
-                comments: 5,
-                time: '4 hours ago'
+        // AUTH & TAB CONTROLS
+        window.switchAuthMode = function(mode) {
+            window.authMode = mode;
+            const loginTab = document.getElementById('auth-tab-login');
+            const signupTab = document.getElementById('auth-tab-signup');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+
+            if (mode === 'login') {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            } else {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
             }
-        ];
-
-        let vocabList = [
-            { id: 'v1', word: 'Salamat kaayo', meaning: 'Thank you very much (本当にかんしゃ)', lang: 'Visayan', example: 'Salamat kaayo sa imong tabang! (Help thank you!)' },
-            { id: 'v2', word: 'Maayo raman ko', meaning: 'I am doing well (元気です)', lang: 'Visayan', example: 'Kumusta ka? - Maayo raman ko!' },
-            { id: 'v3', word: 'JLPT N4', meaning: 'Japanese Language Proficiency Test Level 4', lang: 'Japanese', example: 'I am studying for JLPT N4.' }
-        ];
-
-        const icebreakerTopics = {
-            ja: [
-                'お互いの地元の有名なおすすめグルメは何ですか？',
-                'ビサヤ語・英語・日本語で一番好きな音やフレーズは何ですか？',
-                '休みの日の理想の過ごし方を教えてください！',
-                '行ってみたいセブ島やフィリピン・日本の観光地はどこですか？'
-            ],
-            en: [
-                'What is the most famous local dish in your hometown?',
-                'What is your favorite phrase or word in Visayan or Japanese?',
-                'How do you like to spend a relaxing weekend?',
-                'Which places in Cebu, Philippines, or Japan would you love to visit?'
-            ]
         };
 
-        let selectedCorrectionMsg = null;
-        let quizIndex = 0;
+        window.handleLoginSubmit = function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            loginSuccess(email, email.split('@')[0]);
+        };
 
-        // ================= INIT =================
-        window.onload = function() {
-            setLang('ja');
-            renderVisayanPhrasebook();
+        window.handleSignupSubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const nativeL = document.getElementById('signup-native').value;
+            const learnL = document.getElementById('signup-learning').value;
+
+            loginSuccess(email, name, nativeL, learnL);
+        };
+
+        window.guestLogin = function() {
+            loginSuccess('guest@lingoexchange.com', 'Sakura Tanaka', 'Japanese', 'Visayan');
+        };
+
+        function loginSuccess(email, name, nativeL = 'Japanese', learnL = 'Visayan') {
+            window.currentUser = { email, name, nativeL, learnL };
+            document.getElementById('auth-container').classList.add('hidden');
+            document.getElementById('app-header').classList.remove('hidden');
+            document.getElementById('app-main').classList.remove('hidden');
+            document.getElementById('app-main').classList.add('flex');
+
+            document.getElementById('header-name').textContent = name;
+            document.getElementById('header-langs').textContent = `${nativeL} ➔ ${learnL}`;
+            document.getElementById('prof-name').value = name;
+            document.getElementById('prof-native').value = nativeL;
+            document.getElementById('prof-learning').value = learnL;
+
+            showToast(currentLang === 'ja' ? 'ログインしました！' : 'Signed in!');
+            switchTab('partners');
             renderPartnerGrid(partners);
-            renderChatList();
-            renderChatMessages();
-            renderCommunityFeed();
-            renderVocabGrid();
+        }
+
+        window.handleLogout = function() {
+            window.currentUser = null;
+            document.getElementById('auth-container').classList.remove('hidden');
+            document.getElementById('app-header').classList.add('hidden');
+            document.getElementById('app-main').classList.add('hidden');
+            showToast(currentLang === 'ja' ? 'ログアウトしました。' : 'Logged out.');
         };
 
-        // ================= LANGUAGE SWITCHER =================
-        function setLang(lang) {
-            currentLang = lang;
-            
-            // Toggle active state on language switcher buttons
-            document.getElementById('lang-btn-ja').className = lang === 'ja' ? 'px-2.5 py-1 rounded-lg bg-white shadow-sm text-indigo-600 font-bold' : 'px-2.5 py-1 rounded-lg transition text-slate-600 hover:text-slate-900';
-            document.getElementById('lang-btn-en').className = lang === 'en' ? 'px-2.5 py-1 rounded-lg bg-white shadow-sm text-indigo-600 font-bold' : 'px-2.5 py-1 rounded-lg transition text-slate-600 hover:text-slate-900';
+        window.setLang = function(lang) {
+            window.currentLang = lang;
+            document.getElementById('lang-btn-ja').className = lang === 'ja' ? 'px-2 py-1 rounded-lg bg-white shadow-sm text-indigo-600 font-bold' : 'px-2 py-1 rounded-lg text-slate-600';
+            document.getElementById('lang-btn-en').className = lang === 'en' ? 'px-2 py-1 rounded-lg bg-white shadow-sm text-indigo-600 font-bold' : 'px-2 py-1 rounded-lg text-slate-600';
 
-            // Apply translations to data-i18n elements
             document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (i18n[lang][key]) {
-                    el.textContent = i18n[lang][key];
-                }
+                const k = el.getAttribute('data-i18n');
+                if (i18n[lang][k]) el.textContent = i18n[lang][k];
             });
-
-            // Apply placeholders
             document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-                const key = el.getAttribute('data-i18n-ph');
-                if (i18n[lang][key]) {
-                    el.placeholder = i18n[lang][key];
-                }
+                const k = el.getAttribute('data-i18n-ph');
+                if (i18n[lang][k]) el.placeholder = i18n[lang][k];
             });
 
-            // Re-render dynamic elements
             renderPartnerGrid(partners);
-            renderVisayanPhrasebook();
+            renderVisayanPhrases();
             lucide.createIcons();
-        }
+        };
 
-        // ================= TAB NAVIGATION =================
-        function switchTab(tabName) {
-            const tabs = ['partners', 'chat', 'vocab', 'community', 'profile'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                const sec = document.getElementById(`sec-${t}`);
-                if (t === tabName) {
-                    btn.classList.add('active');
-                    btn.classList.remove('text-slate-600');
-                    sec.classList.remove('hidden');
-                } else {
-                    btn.classList.remove('active');
-                    btn.classList.add('text-slate-600');
-                    sec.classList.add('hidden');
-                }
+        window.switchTab = function(t) {
+            ['partners', 'chat', 'vocab', 'community', 'profile'].forEach(tab => {
+                document.getElementById(`tab-${tab}`).classList.toggle('active', tab === t);
+                document.getElementById(`sec-${tab}`).classList.toggle('hidden', tab !== t);
             });
-
-            if (tabName === 'chat') {
-                renderChatMessages();
-                const badge = document.getElementById('unread-badge');
-                if (badge) badge.classList.add('hidden');
-            }
+            if (t === 'chat') renderChatMessages();
             lucide.createIcons();
-        }
+        };
 
-        // ================= PARTNERS FEATURE =================
+        // PARTNERS & CHAT RENDERERS
         function renderPartnerGrid(list) {
             const grid = document.getElementById('partner-grid');
-            if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No matching language partners found.</div>`;
-                return;
-            }
-
-            const chatBtnText = i18n[currentLang].btn_chat_start || "Start Chat";
-            const levelText = i18n[currentLang].level_label || "Level:";
-
             grid.innerHTML = list.map(p => `
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex items-start gap-3.5 mb-3">
-                            <div class="relative">
-                                <img src="${p.avatar}" class="w-14 h-14 rounded-2xl object-cover border border-slate-100">
-                                ${p.online ? '<span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>' : ''}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h3 class="font-bold text-slate-900 text-base truncate">${p.name}</h3>
-                                <p class="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
-                                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i> ${p.location}
-                                </p>
-                                <div class="flex flex-wrap items-center gap-1.5 mt-2 text-xs">
-                                    <span class="bg-slate-100 px-2 py-0.5 rounded font-semibold text-slate-700">${p.nativeFlag} ${p.nativeLang}</span>
+                            <img src="${p.avatar}" class="w-12 h-12 rounded-2xl object-cover">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm">${p.name}</h3>
+                                <p class="text-[11px] text-slate-500">${p.location}</p>
+                                <div class="flex items-center gap-1.5 mt-1 text-xs font-semibold">
+                                    <span>${p.nativeFlag} ${p.nativeLang}</span>
                                     <span class="text-slate-400">➔</span>
-                                    <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-semibold">${p.learningFlag} ${p.learningLang}</span>
+                                    <span class="text-indigo-600">${p.learningFlag} ${p.learningLang}</span>
                                 </div>
                             </div>
                         </div>
-
-                        <p class="text-xs text-slate-500 font-medium mb-2">${levelText} ${p.level}</p>
-                        <p class="text-xs text-slate-600 leading-relaxed mb-4 line-clamp-3">${p.bio}</p>
-
-                        <div class="flex flex-wrap gap-1.5 mb-5">
-                            ${p.interests.map(i => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#${i}</span>`).join('')}
-                        </div>
+                        <p class="text-xs text-slate-600 mb-4 line-clamp-3">${p.bio}</p>
                     </div>
-
-                    <button onclick="startChatWith('${p.id}')" class="w-full bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white font-semibold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2 border border-indigo-100 hover:border-transparent">
+                    <button onclick="startChat('${p.id}')" class="w-full bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white font-semibold text-xs py-2 rounded-xl transition flex items-center justify-center gap-2">
                         <i data-lucide="message-square" class="w-4 h-4"></i>
-                        <span>${chatBtnText}</span>
+                        <span>Start Chat</span>
                     </button>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        function filterPartners() {
-            const query = document.getElementById('partner-search-input').value.toLowerCase();
-            const nativeFilter = document.getElementById('filter-native').value;
-            const learningFilter = document.getElementById('filter-learning').value;
-
-            const filtered = partners.filter(p => {
-                const matchesQuery = p.name.toLowerCase().includes(query) || p.bio.toLowerCase().includes(query) || p.location.toLowerCase().includes(query);
-                const matchesNative = !nativeFilter || p.nativeLang.toLowerCase().includes(nativeFilter.toLowerCase());
-                const matchesLearning = !learningFilter || p.learningLang.toLowerCase().includes(learningFilter.toLowerCase());
-                return matchesQuery && matchesNative && matchesLearning;
-            });
-
-            renderPartnerGrid(filtered);
-        }
-
-        function startChatWith(partnerId) {
-            if (!chats[partnerId]) {
-                chats[partnerId] = [];
-            }
-            currentChatPartnerId = partnerId;
+        window.startChat = function(pid) {
+            currentChatPartnerId = pid;
             switchTab('chat');
-        }
-
-        // ================= VISAYAN PHRASEBOOK DRAWER =================
-        function toggleVisayanPhrasebook() {
-            const drawer = document.getElementById('visayan-phrasebook');
-            drawer.classList.toggle('hidden');
-        }
-
-        function renderVisayanPhrasebook() {
-            const container = document.getElementById('phrasebook-list');
-            container.innerHTML = visayanPhrases.map(p => `
-                <div onclick="insertPhrase('${escapeHtml(p.ceb)}')" class="bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-700/60 p-2 rounded-xl cursor-pointer transition">
-                    <p class="font-bold text-white text-xs">${p.ceb}</p>
-                    <p class="text-[10px] text-emerald-200 mt-0.5">${currentLang === 'ja' ? p.ja : p.en}</p>
-                </div>
-            `).join('');
-        }
-
-        function insertPhrase(phrase) {
-            const input = document.getElementById('chat-input');
-            input.value += (input.value ? ' ' : '') + phrase;
-            showToast(`Inserted "${phrase}" into chat input.`);
-        }
-
-        // ================= CHAT FEATURE =================
-        function renderChatList() {
-            const listEl = document.getElementById('chat-list');
-            const partnerIds = Object.keys(chats);
-
-            listEl.innerHTML = partnerIds.map(id => {
-                const p = partners.find(item => item.id === id) || partners[0];
-                const lastMsg = chats[id].length > 0 ? chats[id][chats[id].length - 1].text : 'No messages yet';
-                const isActive = id === currentChatPartnerId;
-
-                return `
-                    <div onclick="selectChat('${id}')" class="p-3.5 flex items-center gap-3 cursor-pointer transition ${isActive ? 'bg-indigo-50/80 border-l-4 border-indigo-600' : 'hover:bg-slate-100/60'}">
-                        <div class="relative flex-shrink-0">
-                            <img src="${p.avatar}" class="w-10 h-10 rounded-full object-cover">
-                            ${p.online ? '<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>' : ''}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-baseline mb-0.5">
-                                <h4 class="text-xs font-bold text-slate-800 truncate">${p.name}</h4>
-                                <span class="text-[10px] text-slate-400">10:19</span>
-                            </div>
-                            <p class="text-xs text-slate-500 truncate">${lastMsg}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function selectChat(id) {
-            currentChatPartnerId = id;
-            renderChatList();
-            renderChatMessages();
-        }
+        };
 
         function renderChatMessages() {
             const p = partners.find(item => item.id === currentChatPartnerId) || partners[0];
-
             document.getElementById('active-chat-header').innerHTML = `
-                <img src="${p.avatar}" class="w-9 h-9 rounded-full object-cover border border-slate-200">
+                <img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover">
                 <div>
-                    <h3 class="font-bold text-sm text-slate-900">${p.name}</h3>
-                    <p class="text-[10px] text-slate-500 flex items-center gap-1.5">
-                        <span>${p.nativeFlag} ${p.nativeLang} (Native)</span>
-                        <span>•</span>
-                        <span>${p.location}</span>
-                    </p>
+                    <h4 class="font-bold text-xs text-slate-900">${p.name}</h4>
+                    <span class="text-[10px] text-slate-400">${p.nativeFlag} ${p.nativeLang} (Native)</span>
                 </div>
             `;
 
             const msgs = chats[currentChatPartnerId] || [];
             const container = document.getElementById('chat-messages');
-
-            container.innerHTML = msgs.map(m => {
-                const isMe = m.sender === 'me';
-                return `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} group">
-                        <div class="flex items-end gap-2 max-w-[85%] md:max-w-[75%]">
-                            ${!isMe ? `<img src="${p.avatar}" class="w-7 h-7 rounded-full object-cover flex-shrink-0 mb-1">` : ''}
-                            <div class="flex flex-col">
-                                <div class="px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-sm ${isMe ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'}">
-                                    ${escapeHtml(m.text)}
-                                </div>
-
-                                ${m.correction ? `
-                                    <div class="mt-1.5 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-                                        <div class="font-bold text-[11px] text-amber-800 flex items-center gap-1 mb-0.5">
-                                            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-amber-600"></i> Correction:
-                                        </div>
-                                        <div class="font-semibold text-slate-800">${escapeHtml(m.correction.text)}</div>
-                                        ${m.correction.exp ? `<div class="text-[11px] text-amber-700 mt-0.5">${escapeHtml(m.correction.exp)}</div>` : ''}
-                                    </div>
-                                ` : ''}
-
-                                ${m.showTranslation && m.translated ? `
-                                    <div class="mt-1 text-[11px] bg-slate-100 text-slate-600 p-2 rounded-lg border border-slate-200">
-                                        💡 ${escapeHtml(m.translated)}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-2 mt-1 text-[10px] text-slate-400 px-1">
-                            <span>${m.time}</span>
-                            ${!isMe ? `
-                                <span>•</span>
-                                <button onclick="toggleTranslation('${m.id}')" class="hover:text-indigo-600 flex items-center gap-0.5">
-                                    <i data-lucide="languages" class="w-3 h-3"></i> Translate
-                                </button>
-                                <span>•</span>
-                                <button onclick="openCorrectionModal('${m.id}')" class="hover:text-indigo-600 flex items-center gap-0.5">
-                                    <i data-lucide="edit-3" class="w-3 h-3"></i> Correct
-                                </button>
-                                <span>•</span>
-                                <button onclick="saveToVocabPrompt('${escapeHtml(m.text)}')" class="hover:text-emerald-600 flex items-center gap-0.5">
-                                    <i data-lucide="bookmark" class="w-3 h-3"></i> Save Word
-                                </button>
-                            ` : ''}
-                        </div>
+            container.innerHTML = msgs.map(m => `
+                <div class="flex flex-col ${m.sender === 'me' ? 'items-end' : 'items-start'}">
+                    <div class="px-3.5 py-2 rounded-2xl text-xs max-w-[80%] ${m.sender === 'me' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-800 border border-slate-200'}">
+                        ${m.text}
                     </div>
-                `;
-            }).join('');
-
+                    <span class="text-[9px] text-slate-400 mt-0.5">${m.time}</span>
+                </div>
+            `).join('');
             container.scrollTop = container.scrollHeight;
-            lucide.createIcons();
         }
 
-        function handleSendMessage(e) {
+        window.handleSendMessage = function(e) {
             e.preventDefault();
             const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const now = new Date();
-            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            if (!input.value.trim()) return;
 
             if (!chats[currentChatPartnerId]) chats[currentChatPartnerId] = [];
-            
-            chats[currentChatPartnerId].push({
-                id: 'm_' + Date.now(),
-                sender: 'me',
-                text: text,
-                time: timeStr
-            });
-
+            chats[currentChatPartnerId].push({ sender: 'me', text: input.value.trim(), time: 'Just now' });
             input.value = '';
-            renderChatList();
             renderChatMessages();
+        };
 
-            // Automatic simulated reply
-            setTimeout(() => {
-                const replies = [
-                    "Salamat kaayo for your message! That is very clear.",
-                    "Maayo! (Great!) Let's keep practicing Visayan & Japanese!",
-                    "That's awesome! How do you say that in Japanese formal style?"
-                ];
-                const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                
-                chats[currentChatPartnerId].push({
-                    id: 'm_reply_' + Date.now(),
-                    sender: 'them',
-                    text: randomReply,
-                    translated: 'メッセージありがとうございます！とても分かりやすいです。',
-                    time: `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`
-                });
-                renderChatList();
-                renderChatMessages();
-            }, 1200);
-        }
-
-        function toggleTranslation(msgId) {
-            const list = chats[currentChatPartnerId];
-            const msg = list.find(m => m.id === msgId);
-            if (msg) {
-                msg.showTranslation = !msg.showTranslation;
-                renderChatMessages();
-            }
-        }
-
-        // ================= ICEBREAKER GENERATOR =================
-        function generateIcebreaker() {
-            const banner = document.getElementById('icebreaker-banner');
-            const textEl = document.getElementById('icebreaker-text');
-            const list = icebreakerTopics[currentLang] || icebreakerTopics['en'];
-            const randomTopic = list[Math.floor(Math.random() * list.length)];
-            textEl.textContent = `${currentLang === 'ja' ? '会話のヒント' : 'Topic Hint'}: "${randomTopic}"`;
-            banner.classList.remove('hidden');
-        }
-
-        function hideIcebreaker() {
-            document.getElementById('icebreaker-banner').classList.add('hidden');
-        }
-
-        // ================= CORRECTION MODAL =================
-        function openCorrectionModal(msgId) {
-            const list = chats[currentChatPartnerId];
-            selectedCorrectionMsg = list.find(m => m.id === msgId);
-            if (!selectedCorrectionMsg) return;
-
-            document.getElementById('modal-original-text').textContent = selectedCorrectionMsg.text;
-            document.getElementById('modal-corrected-input').value = selectedCorrectionMsg.text;
-            document.getElementById('modal-explanation-input').value = '';
-            document.getElementById('correction-modal').classList.remove('hidden');
-        }
-
-        function closeCorrectionModal() {
-            document.getElementById('correction-modal').classList.add('hidden');
-            selectedCorrectionMsg = null;
-        }
-
-        function submitCorrection() {
-            if (!selectedCorrectionMsg) return;
-            const corrText = document.getElementById('modal-corrected-input').value.trim();
-            const expText = document.getElementById('modal-explanation-input').value.trim();
-
-            if (corrText) {
-                selectedCorrectionMsg.correction = { text: corrText, exp: expText };
-                renderChatMessages();
-                showToast(currentLang === 'ja' ? '添削メッセージを共有しました！' : 'Correction shared with partner!');
-            }
-            closeCorrectionModal();
-        }
-
-        // ================= COMMUNITY FEATURE =================
-        function renderCommunityFeed() {
-            const feed = document.getElementById('community-feed');
-            feed.innerHTML = communityPosts.map(p => `
-                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                    <div class="flex items-center gap-3 mb-3">
-                        <img src="${p.avatar}" class="w-9 h-9 rounded-full object-cover">
-                        <div>
-                            <h4 class="font-bold text-xs text-slate-800">${p.author}</h4>
-                            <span class="text-[10px] text-slate-400">${p.time}</span>
-                        </div>
-                    </div>
-                    <h3 class="font-bold text-sm text-slate-900 mb-2">${escapeHtml(p.title)}</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed mb-4">${escapeHtml(p.body)}</p>
-                    
-                    <div class="flex flex-wrap gap-1.5 mb-4">
-                        ${p.tags.map(t => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#${t}</span>`).join('')}
-                    </div>
-
-                    <div class="flex items-center gap-6 pt-3 border-t border-slate-100 text-xs text-slate-500">
-                        <button onclick="likePost('${p.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition">
-                            <i data-lucide="heart" class="w-4 h-4"></i>
-                            <span>${p.likes}</span>
-                        </button>
-                        <button class="flex items-center gap-1.5 hover:text-indigo-600 transition">
-                            <i data-lucide="message-circle" class="w-4 h-4"></i>
-                            <span>${p.comments} ${currentLang === 'ja' ? '回答' : 'Replies'}</span>
-                        </button>
-                    </div>
+        function renderVisayanPhrases() {
+            document.getElementById('phrasebook-list').innerHTML = visayanPhrases.map(p => `
+                <div onclick="insertPhrase('${p.ceb}')" class="bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-700/60 p-2 rounded-xl cursor-pointer">
+                    <p class="font-bold text-white text-xs">${p.ceb}</p>
+                    <p class="text-[10px] text-emerald-200">${currentLang === 'ja' ? p.ja : p.en}</p>
                 </div>
             `).join('');
-            lucide.createIcons();
         }
 
-        function openPostModal() { document.getElementById('post-modal').classList.remove('hidden'); }
-        function closePostModal() { document.getElementById('post-modal').classList.add('hidden'); }
+        window.toggleVisayanPhrasebook = () => document.getElementById('visayan-phrasebook').classList.toggle('hidden');
+        window.insertPhrase = (ph) => { document.getElementById('chat-input').value += ' ' + ph; };
 
-        function submitPost() {
-            const title = document.getElementById('post-title').value.trim();
-            const body = document.getElementById('post-body').value.trim();
-
-            if (!title || !body) return;
-
-            communityPosts.unshift({
-                id: 'post_' + Date.now(),
-                author: 'Sakura Tanaka',
-                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
-                title: title,
-                body: body,
-                tags: ['General', 'Language'],
-                likes: 0,
-                comments: 0,
-                time: 'Just now'
-            });
-
-            document.getElementById('post-title').value = '';
-            document.getElementById('post-body').value = '';
-
-            closePostModal();
-            renderCommunityFeed();
-            showToast('Question posted!');
-        }
-
-        function likePost(postId) {
-            const post = communityPosts.find(p => p.id === postId);
-            if (post) {
-                post.likes += 1;
-                renderCommunityFeed();
-            }
-        }
-
-        // ================= VOCABULARY & FLASHCARDS =================
-        function renderVocabGrid() {
-            const grid = document.getElementById('vocab-grid');
-            if (vocabList.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400">No saved vocabulary yet.</div>`;
-                return;
-            }
-
-            grid.innerHTML = vocabList.map(v => `
-                <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200">${v.lang}</span>
-                            <button onclick="deleteVocab('${v.id}')" class="text-slate-300 hover:text-rose-500 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                        <h3 class="font-bold text-base text-slate-900 mb-1">${escapeHtml(v.word)}</h3>
-                        <p class="text-xs font-semibold text-indigo-600 mb-2">${escapeHtml(v.meaning)}</p>
-                        ${v.example ? `<p class="text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg italic">"${escapeHtml(v.example)}"</p>` : ''}
-                    </div>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        function openAddVocabModal() { document.getElementById('vocab-modal').classList.remove('hidden'); }
-        function closeVocabModal() { document.getElementById('vocab-modal').classList.add('hidden'); }
-
-        function submitVocab() {
-            const word = document.getElementById('vocab-word').value.trim();
-            const meaning = document.getElementById('vocab-meaning').value.trim();
-            const lang = document.getElementById('vocab-lang').value;
-
-            if (!word || !meaning) return;
-
-            vocabList.unshift({
-                id: 'v_' + Date.now(),
-                word: word,
-                meaning: meaning,
-                lang: lang,
-                example: ''
-            });
-
-            document.getElementById('vocab-word').value = '';
-            document.getElementById('vocab-meaning').value = '';
-
-            closeVocabModal();
-            renderVocabGrid();
-            showToast('Word saved to deck!');
-        }
-
-        function saveToVocabPrompt(text) {
-            const meaning = prompt(`Meaning/Translation for "${text}":`);
-            if (meaning) {
-                vocabList.unshift({
-                    id: 'v_' + Date.now(),
-                    word: text,
-                    meaning: meaning,
-                    lang: 'Visayan',
-                    example: ''
-                });
-                renderVocabGrid();
-                showToast('Saved to vocabulary deck!');
-            }
-        }
-
-        function deleteVocab(id) {
-            vocabList = vocabList.filter(v => v.id !== id);
-            renderVocabGrid();
-        }
-
-        // Flashcard Quiz Logic
-        function startQuizMode() {
-            if (vocabList.length === 0) {
-                alert("Add some words to your deck first!");
-                return;
-            }
-            quizIndex = 0;
-            updateQuizCard();
-            document.getElementById('quiz-modal').classList.remove('hidden');
-        }
-
-        function closeQuizModal() { document.getElementById('quiz-modal').classList.add('hidden'); }
-
-        function updateQuizCard() {
-            const item = vocabList[quizIndex];
-            document.getElementById('quiz-progress').textContent = `Card ${quizIndex + 1} / ${vocabList.length}`;
-            document.getElementById('quiz-lang-badge').textContent = item.lang;
-            document.getElementById('quiz-card-term').textContent = item.word;
-            document.getElementById('quiz-card-answer').textContent = item.meaning;
-            document.getElementById('quiz-card-answer').classList.add('hidden');
-            document.getElementById('quiz-card-hint').classList.remove('hidden');
-        }
-
-        function flipQuizCard() {
-            document.getElementById('quiz-card-answer').classList.toggle('hidden');
-            document.getElementById('quiz-card-hint').classList.toggle('hidden');
-        }
-
-        function nextQuizCard(gotIt) {
-            quizIndex = (quizIndex + 1) % vocabList.length;
-            updateQuizCard();
-        }
-
-        // ================= PROFILE FEATURE =================
-        function saveProfile() {
-            const name = document.getElementById('prof-name').value;
-            const native = document.getElementById('prof-native').value;
-            const learning = document.getElementById('prof-learning').value;
-
-            document.getElementById('header-name').textContent = name;
-            document.getElementById('header-langs').textContent = `${native} ➔ ${learning}`;
-            showToast('Profile settings saved successfully!');
-        }
-
-        // ================= UTILS =================
         function showToast(msg) {
-            const toast = document.getElementById('toast');
+            const t = document.getElementById('toast');
             document.getElementById('toast-message').textContent = msg;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
+        // Init App
+        renderPartnerGrid(partners);
+        renderVisayanPhrases();
+        lucide.createIcons();
     </script>
 </body>
 </html>
