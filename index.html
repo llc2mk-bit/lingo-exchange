@@ -333,15 +333,26 @@
                 </div>
 
                 <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs sm:text-sm text-amber-800 space-y-2">
-                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Supabaseのテーブル構築手順:</p>
-                    <p>SupabaseのSQL Editorで以下のテーブルを作成してください:</p>
-                    <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl text-xs overflow-x-auto select-all">
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    <p class="font-bold"><i class="fa-solid fa-circle-info mr-1"></i> Supabaseのテーブル構築手順 (SQL Editorで実行):</p>
+                    <p>以下のSQLを実行して `profiles`（画像保持用）と `messages`（チャット用）のテーブルを作成してください:</p>
+                    <pre class="bg-slate-900 text-emerald-400 p-3 rounded-xl text-xs overflow-x-auto select-all font-mono">
+-- 1. プロフィールテーブル作成
+CREATE TABLE IF NOT EXISTS profiles (
+  id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   native_lang TEXT NOT NULL,
   learning_lang TEXT NOT NULL,
   bio TEXT,
+  avatar TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 2. チャットメッセージテーブル作成
+CREATE TABLE IF NOT EXISTS messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sender_id TEXT NOT NULL,
+  receiver_id TEXT NOT NULL,
+  content TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );</pre>
                 </div>
@@ -363,6 +374,38 @@ CREATE TABLE profiles (
         </section>
 
     </main>
+
+    <!-- CHAT MODAL UI -->
+    <div id="chat-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl flex flex-col h-[600px] max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <!-- Chat Header -->
+            <div class="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img id="chat-partner-avatar" src="https://placehold.co/100x100/16a34a/ffffff?text=User" class="w-10 h-10 rounded-full object-cover border border-slate-700">
+                    <div>
+                        <h3 id="chat-partner-name" class="font-bold text-base leading-tight">Partner Name</h3>
+                        <p id="chat-partner-sub" class="text-xs text-slate-400">オンライン</p>
+                    </div>
+                </div>
+                <button onclick="closeChat()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages Log -->
+            <div id="chat-messages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-50">
+                <!-- Messages dynamic rendering -->
+            </div>
+
+            <!-- Chat Input Area -->
+            <form onsubmit="sendMessage(event)" class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                <input type="text" id="chat-input" placeholder="メッセージを入力..." required class="flex-grow bg-slate-100 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500">
@@ -499,6 +542,7 @@ CREATE TABLE profiles (
         // 3. Mock & Supabase Data Management
         // ==========================================
         let currentAvatarDataUrl = "https://placehold.co/100x100/16a34a/ffffff?text=User";
+        let currentChatPartner = null;
 
         let samplePartners = [
             {
@@ -591,7 +635,7 @@ CREATE TABLE profiles (
                             ${escapeHtml(p.bio || '自己紹介はありません')}
                         </p>
                     </div>
-                    <button onclick="startChat('${escapeHtml(p.name)}')" class="w-full py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                    <button onclick="startChat('${p.id}')" class="w-full py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
                         <i class="fa-regular fa-paper-plane"></i>
                         <span>メッセージを送る</span>
                     </button>
@@ -694,8 +738,98 @@ CREATE TABLE profiles (
             }
         }
 
-        function startChat(name) {
-            alert(`${name} さんへのメッセージ機能はプロトタイプです。言語交流を楽しんでください！`);
+        // ==========================================
+        // 4. Chat System Logic
+        // ==========================================
+        function startChat(partnerId) {
+            const partner = samplePartners.find(p => p.id === partnerId);
+            if (!partner) return;
+
+            currentChatPartner = partner;
+            document.getElementById('chat-partner-name').textContent = partner.name;
+            document.getElementById('chat-partner-sub').textContent = `${partner.native_lang} → ${partner.learning_lang}`;
+            document.getElementById('chat-partner-avatar').src = partner.avatar || 'https://placehold.co/100x100/94a3b8/ffffff?text=User';
+
+            renderChatMessages();
+            document.getElementById('chat-modal').classList.remove('hidden');
+        }
+
+        function closeChat() {
+            document.getElementById('chat-modal').classList.add('hidden');
+            currentChatPartner = null;
+        }
+
+        function getChatHistoryKey(partnerId) {
+            const myId = localStorage.getItem('lingo_my_id') || 'my_user';
+            return `lingo_chat_${myId}_${partnerId}`;
+        }
+
+        function renderChatMessages() {
+            if (!currentChatPartner) return;
+            const messagesContainer = document.getElementById('chat-messages');
+            messagesContainer.innerHTML = '';
+
+            const key = getChatHistoryKey(currentChatPartner.id);
+            const history = JSON.parse(localStorage.getItem(key) || '[]');
+
+            if (history.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="text-center py-8 text-xs text-slate-400">
+                        <p>${escapeHtml(currentChatPartner.name)} さんに最初のメッセージを送ってみましょう！</p>
+                    </div>
+                `;
+            } else {
+                history.forEach(msg => {
+                    const isMe = msg.sender === 'me';
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                    msgDiv.innerHTML = `
+                        <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm shadow-sm ${
+                            isMe ? 'bg-brand-600 text-white rounded-br-none' : 'bg-white text-slate-800 border border-slate-200/80 rounded-bl-none'
+                        }">
+                            ${escapeHtml(msg.text)}
+                        </div>
+                        <span class="text-[10px] text-slate-400 mt-1 px-1">${msg.time}</span>
+                    `;
+                    messagesContainer.appendChild(msgDiv);
+                });
+            }
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !currentChatPartner) return;
+
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            const newMessage = {
+                sender: 'me',
+                text: text,
+                time: timeStr
+            };
+
+            const key = getChatHistoryKey(currentChatPartner.id);
+            const history = JSON.parse(localStorage.getItem(key) || '[]');
+            history.push(newMessage);
+            localStorage.setItem(key, JSON.stringify(history));
+
+            input.value = '';
+            renderChatMessages();
+
+            // Supabase 接続時のリアルタイム送信処理
+            if (supabaseClient) {
+                const myId = localStorage.getItem('lingo_my_id') || 'my_user';
+                supabaseClient.from('messages').insert([{
+                    sender_id: myId,
+                    receiver_id: currentChatPartner.id,
+                    content: text
+                }]);
+            }
         }
 
         function saveSupabaseConfig(e) {
