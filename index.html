@@ -427,6 +427,9 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
 
     <!-- Direct JS Code logic -->
     <script>
+        // Global Supabase Client Instance
+        let supabaseClient = null;
+
         // ==========================================
         // 1. Multilingual i18n Dictionaries
         // ==========================================
