@@ -848,13 +848,69 @@ CREATE TABLE IF NOT EXISTS messages (
 
         async function loadSupabaseProfiles() {
             if (!supabaseClient) return;
-            const { data, error } = await supabaseClient.from('profiles').select('*');
-            if (data && data.length > 0) {
-                samplePartners = data.map(d => ({
-                    ...d,
-                    avatar: `https://placehold.co/100x100/0038A8/ffffff?text=${encodeURIComponent(d.name.substring(0,2))}`
-                }));
-                filterPartners();
+            try {
+                const { data, error } = await supabaseClient.from('profiles').select('*');
+                if (error) {
+                    console.error('Supabase Profile Fetch Error:', error);
+                    return;
+                }
+                if (data && data.length > 0) {
+                    // 他のユーザーが登録したプロフィールを含めて更新
+                    const fetchedProfiles = data.map(d => ({
+                        id: d.id,
+                        name: d.name,
+                        native_lang: d.native_lang,
+                        learning_lang: d.learning_lang,
+                        bio: d.bio,
+                        avatar: d.avatar || `https://placehold.co/100x100/0038A8/ffffff?text=${encodeURIComponent((d.name || 'U').substring(0,2))}`
+                    }));
+
+                    // 取得したデータでパートナーリストを全更新（ローカル保持分とマージ）
+                    fetchedProfiles.forEach(fp => {
+                        const idx = samplePartners.findIndex(p => p.id === fp.id);
+                        if (idx !== -1) {
+                            samplePartners[idx] = fp;
+                        } else {
+                            samplePartners.unshift(fp);
+                        }
+                    });
+
+                    filterPartners();
+                }
+            } catch (e) {
+                console.error("Failed to load profiles from Supabase:", e);
+            }
+        }
+
+        function saveSupabaseConfig(e) {
+            e.preventDefault();
+            const url = document.getElementById('sb-url').value;
+            const key = document.getElementById('sb-key').value;
+
+            try {
+                supabaseClient = window.supabase.createClient(url, key);
+                localStorage.setItem('lingo_sb_url', url);
+                localStorage.setItem('lingo_sb_key', key);
+                alert('Supabaseの設定が保存されました！');
+                loadSupabaseProfiles();
+            } catch (err) {
+                alert('Supabaseの初期化に失敗しました: ' + err.message);
+            }
+        }
+
+        // 保存されたSupabase接続情報を復元
+        function autoConnectSupabase() {
+            const url = localStorage.getItem('lingo_sb_url');
+            const key = localStorage.getItem('lingo_sb_key');
+            if (url && key && window.supabase) {
+                try {
+                    document.getElementById('sb-url').value = url;
+                    document.getElementById('sb-key').value = key;
+                    supabaseClient = window.supabase.createClient(url, key);
+                    loadSupabaseProfiles();
+                } catch (e) {
+                    console.warn("Auto connect to Supabase failed:", e);
+                }
             }
         }
 
@@ -868,6 +924,7 @@ CREATE TABLE IF NOT EXISTS messages (
         window.onload = function() {
             loadSavedProfile();
             renderPartners(samplePartners);
+            autoConnectSupabase();
             updateUI();
         };
     </script>
