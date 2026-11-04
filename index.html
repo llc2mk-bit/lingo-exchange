@@ -273,6 +273,19 @@
                         <input type="text" id="user-name" required placeholder="例: Ken / Maria" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition">
                     </div>
 
+                    <!-- Profile Avatar Image Selector -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">プロフィール画像 (アイコン)</label>
+                        <div class="flex items-center gap-4">
+                            <img id="avatar-preview" src="https://placehold.co/100x100/16a34a/ffffff?text=User" class="w-16 h-16 rounded-full object-cover border-2 border-brand-500 shadow-sm">
+                            <label class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-slate-300">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>画像を選択</span>
+                                <input type="file" id="user-avatar-input" accept="image/*" class="hidden" onchange="previewAvatar(event)">
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Native Language Dropdown -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1" data-i18n="profileNativeLabel">母国語 (Native Language)</label>
@@ -485,6 +498,8 @@ CREATE TABLE profiles (
         // ==========================================
         // 3. Mock & Supabase Data Management
         // ==========================================
+        let currentAvatarDataUrl = "https://placehold.co/100x100/16a34a/ffffff?text=User";
+
         let samplePartners = [
             {
                 id: '1',
@@ -521,6 +536,19 @@ CREATE TABLE profiles (
         ];
 
         let supabaseClient = null;
+
+        // 画像選択時のリアルタイムプレビュー
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentAvatarDataUrl = e.target.result;
+                document.getElementById('avatar-preview').src = currentAvatarDataUrl;
+            };
+            reader.readAsDataURL(file);
+        }
 
         function renderPartners(data) {
             const grid = document.getElementById('partners-grid');
@@ -594,27 +622,76 @@ CREATE TABLE profiles (
             const learning_lang = document.getElementById('user-learning').value;
             const bio = document.getElementById('user-bio').value;
 
-            const newProfile = {
-                id: Date.now().toString(),
+            // 自分のプロフィールデータ構築
+            const myProfile = {
+                id: localStorage.getItem('lingo_my_id') || ('my_' + Date.now()),
                 name,
                 native_lang,
                 learning_lang,
                 bio,
-                avatar: `https://placehold.co/100x100/16a34a/ffffff?text=${encodeURIComponent(name.substring(0,2))}`
+                avatar: currentAvatarDataUrl
             };
 
-            samplePartners.unshift(newProfile);
+            // 自分のIDを保持
+            localStorage.setItem('lingo_my_id', myProfile.id);
+
+            // ローカルストレージに自分のプロフィールを保存 (永続化)
+            localStorage.setItem('lingo_user_profile', JSON.stringify(myProfile));
+
+            // パートナーリストの中で自分を更新（または先頭に追加）
+            const existingIdx = samplePartners.findIndex(p => p.id === myProfile.id);
+            if (existingIdx !== -1) {
+                samplePartners[existingIdx] = myProfile;
+            } else {
+                samplePartners.unshift(myProfile);
+            }
+
             filterPartners();
 
             if (supabaseClient) {
-                supabaseClient.from('profiles').insert([{ name, native_lang, learning_lang, bio }]).then(res => {
-                    alert('Supabase DBにも保存されました！');
+                supabaseClient.from('profiles').upsert([{ 
+                    id: myProfile.id,
+                    name, 
+                    native_lang, 
+                    learning_lang, 
+                    bio,
+                    avatar: currentAvatarDataUrl
+                }]).then(res => {
+                    alert('プロフィールが保存・クラウド同期されました！');
                 });
             } else {
-                alert('プロフィールがローカル保存されました！');
+                alert('プロフィールが保存されました！（ブラウザを閉じても保持されます）');
             }
 
             switchTab('partners');
+        }
+
+        // 保存された自身のプロフィールを復元ロードする
+        function loadSavedProfile() {
+            const saved = localStorage.getItem('lingo_user_profile');
+            if (saved) {
+                try {
+                    const profile = JSON.parse(saved);
+                    document.getElementById('user-name').value = profile.name || '';
+                    document.getElementById('user-native').value = profile.native_lang || '日本語';
+                    document.getElementById('user-learning').value = profile.learning_lang || 'ビサヤ語（Visayan / Cebuano）';
+                    document.getElementById('user-bio').value = profile.bio || '';
+                    if (profile.avatar) {
+                        currentAvatarDataUrl = profile.avatar;
+                        document.getElementById('avatar-preview').src = profile.avatar;
+                    }
+
+                    // リストに自分を追加・反映
+                    const existingIdx = samplePartners.findIndex(p => p.id === profile.id);
+                    if (existingIdx !== -1) {
+                        samplePartners[existingIdx] = profile;
+                    } else {
+                        samplePartners.unshift(profile);
+                    }
+                } catch(err) {
+                    console.error("プロフィール復元エラー:", err);
+                }
+            }
         }
 
         function startChat(name) {
@@ -655,6 +732,7 @@ CREATE TABLE profiles (
 
         // Initialize on load
         window.onload = function() {
+            loadSavedProfile();
             renderPartners(samplePartners);
             updateUI();
         };
