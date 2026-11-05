@@ -368,7 +368,7 @@
                 <button onclick="closeSupabaseModal()" class="text-slate-400 hover:text-slate-600 text-xl">×</button>
             </div>
             <p class="text-xs text-slate-600 mb-4">
-                Requirement 4: 本アプリは無料の Supabase データベースに対応しています。SupabaseのプロジェクトURLとAnon Keyを入力すると実データが即座に動的同期されます。
+                本アプリは無料の Supabase データベースに対応しています。SupabaseのプロジェクトURLとAnon Keyを入力すると実データが即座に動的同期されます。
             </p>
             <div class="space-y-3">
                 <div>
@@ -402,13 +402,10 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        /**
-         * State & Multilingual Translations
-         */
-        let currentLang = 'ja'; // 'ja' or 'en'
+        let currentLang = 'ja';
         let supabaseClient = null;
 
-        // Current user session data
+        // Current user profile state
         let currentUser = {
             id: 'user_' + Math.random().toString(36).substr(2, 9),
             name: '',
@@ -419,7 +416,37 @@
             avatar: 'https://placehold.co/150x150/0284c7/ffffff?text=Icon'
         };
 
-        // Fallback Local Storage Data for feed & members
+        // Fallback Initial Members List
+        let mockMembers = [
+            {
+                id: 'm1',
+                name: 'Maria Santos',
+                avatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Maria',
+                nativeLang: 'ビサヤ語',
+                learningLang: '日本語',
+                location: 'Cebu City, Philippines',
+                bio: 'Hi! I want to practice Japanese conversation. I love Japanese anime and food!'
+            },
+            {
+                id: 'm2',
+                name: 'Kenji Tanaka',
+                avatar: 'https://placehold.co/100x100/0284c7/ffffff?text=Kenji',
+                nativeLang: '日本語',
+                learningLang: 'ビサヤ語（Visayan / Cebuano）',
+                location: 'Tokyo, Japan',
+                bio: 'フィリピンのカルチャーとビサヤ語に興味があります。日常会話を学びたいです！'
+            },
+            {
+                id: 'm3',
+                name: 'Grace Flores',
+                avatar: 'https://placehold.co/100x100/10b981/ffffff?text=Grace',
+                nativeLang: 'ビサヤ語',
+                learningLang: '日本語',
+                location: 'Davao, Philippines',
+                bio: 'Hello! I live in Mindanao. Excited to meet Japanese friends here.'
+            }
+        ];
+
         let mockPosts = [
             {
                 id: '1',
@@ -441,34 +468,6 @@
             }
         ];
 
-        let mockMembers = [
-            {
-                name: 'Maria Santos',
-                avatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Maria',
-                native: 'ビサヤ語',
-                learning: '日本語',
-                location: 'Cebu City, Philippines',
-                bio: 'Hi! I want to practice Japanese conversation. I love Japanese anime and food!'
-            },
-            {
-                name: 'Kenji Tanaka',
-                avatar: 'https://placehold.co/100x100/0284c7/ffffff?text=Kenji',
-                native: '日本語',
-                learning: 'ビサヤ語（Visayan / Cebuano）',
-                location: 'Tokyo, Japan',
-                bio: 'フィリピンのカルチャーとビサヤ語に興味があります。日常会話を学びたいです！'
-            },
-            {
-                name: 'Grace Flores',
-                avatar: 'https://placehold.co/100x100/10b981/ffffff?text=Grace',
-                native: 'ビサヤ語',
-                learning: '日本語',
-                location: 'Davao, Philippines',
-                bio: 'Hello! I live in Mindanao. Excited to meet Japanese friends here.'
-            }
-        ];
-
-        // Dictionary of English / Japanese translations for UI
         const translations = {
             ja: {
                 landing_body: `このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
@@ -549,9 +548,6 @@ Now, let's get started.`,
             { vis: "Pila kini?", jp: "これはいくらですか？", en: "How much is this?" }
         ];
 
-        /**
-         * INITIALIZATION
-         */
         window.addEventListener('DOMContentLoaded', () => {
             loadStoredUser();
             initSupabaseFromStorage();
@@ -560,9 +556,6 @@ Now, let's get started.`,
             renderPosts();
         });
 
-        /**
-         * REQUIREMENT 2: Bilingual UI Switching (Japanese / English)
-         */
         function setUiLanguage(lang) {
             currentLang = lang;
             const btnJa = document.getElementById('btn-lang-ja');
@@ -576,7 +569,6 @@ Now, let's get started.`,
                 btnJa.className = "px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800";
             }
 
-            // Update all DOM elements with data-i18n attribute
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (translations[lang] && translations[lang][key]) {
@@ -584,13 +576,9 @@ Now, let's get started.`,
                 }
             });
 
-            // Update Landing Page Letter Body
             document.getElementById('landing-text-body').innerText = translations[lang].landing_body;
         }
 
-        /**
-         * NAVIGATION & ROUTING
-         */
         function navigateTo(viewId) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
             const target = document.getElementById('view-' + viewId);
@@ -600,14 +588,10 @@ Now, let's get started.`,
             }
         }
 
-        /**
-         * REQUIREMENT 3: Image File Upload & Instant Profile Avatar Preview
-         */
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Check file type
             if (!file.type.match('image.*')) {
                 showToast('画像ファイル（JPEG, PNG等）を選択してください。', 'error');
                 return;
@@ -616,7 +600,6 @@ Now, let's get started.`,
             const reader = new FileReader();
             reader.onload = function(e) {
                 const dataUrl = e.target.result;
-                // Instant reflect on profile preview & header
                 currentUser.avatar = dataUrl;
                 document.getElementById('profile-avatar-preview').src = dataUrl;
                 document.getElementById('header-avatar').src = dataUrl;
@@ -627,9 +610,9 @@ Now, let's get started.`,
         }
 
         /**
-         * SAVE PROFILE
+         * SAVE PROFILE & UPDATE MEMBERS LIST IMMEDIATELY
          */
-        function saveProfile(e) {
+        async function saveProfile(e) {
             e.preventDefault();
             currentUser.name = document.getElementById('user-name').value.trim();
             currentUser.nativeLang = document.getElementById('user-native-lang').value;
@@ -637,19 +620,53 @@ Now, let's get started.`,
             currentUser.location = document.getElementById('user-location').value.trim();
             currentUser.bio = document.getElementById('user-bio').value.trim();
 
-            // Save to localStorage
+            // 1. Save locally
             localStorage.setItem('lingo_user', JSON.stringify(currentUser));
 
-            // Sync with Supabase if configured
-            if (supabaseClient) {
-                supabaseClient.from('profiles').upsert(currentUser).then(({ error }) => {
-                    if (error) console.error("Supabase sync error:", error);
-                });
+            // 2. Add / Update in local members list
+            const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
+            const memberObj = {
+                id: currentUser.id,
+                name: currentUser.name,
+                avatar: currentUser.avatar,
+                nativeLang: currentUser.nativeLang,
+                learningLang: currentUser.learningLang,
+                location: currentUser.location || '未設定',
+                bio: currentUser.bio || 'よろしくお願いします！'
+            };
+
+            if (existingIdx >= 0) {
+                mockMembers[existingIdx] = memberObj;
+            } else {
+                mockMembers.unshift(memberObj);
             }
 
-            // Update UI elements
+            // 3. Save to Supabase DB if enabled
+            if (supabaseClient) {
+                try {
+                    const dbPayload = {
+                        id: currentUser.id,
+                        name: currentUser.name,
+                        native_lang: currentUser.nativeLang,
+                        learning_lang: currentUser.learningLang,
+                        location: currentUser.location,
+                        bio: currentUser.bio,
+                        avatar: currentUser.avatar
+                    };
+                    const { error } = await supabaseClient.from('profiles').upsert(dbPayload);
+                    if (error) throw error;
+                    showToast('プロフィールを保存し、メンバー一覧へ反映しました！');
+                    await fetchMembersFromSupabase();
+                } catch (err) {
+                    console.error("Supabase profile save error:", err);
+                    showToast('プロフィールをローカルに保存しました。', 'info');
+                }
+            } else {
+                showToast('プロフィールを保存し、メンバー一覧に追加しました！');
+            }
+
             updateUserUI();
-            showToast('プロフィールを保存しました');
+            renderMembers();
             navigateTo('feed');
         }
 
@@ -666,6 +683,26 @@ Now, let's get started.`,
                     if (currentUser.avatar) {
                         document.getElementById('profile-avatar-preview').src = currentUser.avatar;
                     }
+                    
+                    // Add current user to members array if name exists
+                    if (currentUser.name) {
+                        const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
+                        const memberObj = {
+                            id: currentUser.id,
+                            name: currentUser.name,
+                            avatar: currentUser.avatar,
+                            nativeLang: currentUser.nativeLang,
+                            learningLang: currentUser.learningLang,
+                            location: currentUser.location || '未設定',
+                            bio: currentUser.bio || 'よろしくお願いします！'
+                        };
+                        if (existingIdx >= 0) {
+                            mockMembers[existingIdx] = memberObj;
+                        } else {
+                            mockMembers.unshift(memberObj);
+                        }
+                    }
+
                     updateUserUI();
                 } catch(e) {
                     console.error("Error loading saved user:", e);
@@ -687,7 +724,7 @@ Now, let's get started.`,
         /**
          * TIMELINE & POSTS
          */
-        function createPost(e) {
+        async function createPost(e) {
             e.preventDefault();
             const content = document.getElementById('post-content').value.trim();
             if (!content) return;
@@ -700,24 +737,101 @@ Now, let's get started.`,
 
             const newPost = {
                 id: Date.now().toString(),
-                userName: currentUser.name,
-                userAvatar: currentUser.avatar,
-                nativeLang: currentUser.nativeLang,
-                learningLang: currentUser.learningLang,
+                user_name: currentUser.name,
+                user_avatar: currentUser.avatar,
+                native_lang: currentUser.nativeLang,
+                learning_lang: currentUser.learningLang,
                 content: content,
-                createdAt: 'たった今'
+                created_at: new Date().toISOString()
             };
 
-            mockPosts.unshift(newPost);
-            document.getElementById('post-content').value = '';
-            renderPosts();
-            showToast('タイムラインに投稿しました！');
-
-            // Sync with Supabase if active
             if (supabaseClient) {
-                supabaseClient.from('posts').insert(newPost).then(({ error }) => {
-                    if (error) console.error("Post save error:", error);
+                try {
+                    const { error } = await supabaseClient.from('posts').insert(newPost);
+                    if (error) throw error;
+                    showToast('Supabaseへ投稿しました！');
+                    await fetchPostsFromSupabase();
+                } catch (err) {
+                    console.error("Post save error:", err);
+                    mockPosts.unshift({
+                        id: newPost.id,
+                        userName: newPost.user_name,
+                        userAvatar: newPost.user_avatar,
+                        nativeLang: newPost.native_lang,
+                        learningLang: newPost.learning_lang,
+                        content: newPost.content,
+                        createdAt: 'たった今'
+                    });
+                    renderPosts();
+                }
+            } else {
+                mockPosts.unshift({
+                    id: newPost.id,
+                    userName: newPost.user_name,
+                    userAvatar: newPost.user_avatar,
+                    nativeLang: newPost.native_lang,
+                    learningLang: newPost.learning_lang,
+                    content: newPost.content,
+                    createdAt: 'たった今'
                 });
+                renderPosts();
+                showToast('タイムラインに投稿しました！');
+            }
+
+            document.getElementById('post-content').value = '';
+        }
+
+        async function fetchPostsFromSupabase() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient.from('posts').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    mockPosts = data.map(p => ({
+                        id: p.id,
+                        userName: p.user_name,
+                        userAvatar: p.user_avatar,
+                        nativeLang: p.native_lang,
+                        learningLang: p.learning_lang,
+                        content: p.content,
+                        createdAt: new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    }));
+                    renderPosts();
+                }
+            } catch (err) {
+                console.error("Error fetching posts:", err);
+            }
+        }
+
+        async function fetchMembersFromSupabase() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient.from('profiles').select('*');
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    const dbMembers = data.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        avatar: p.avatar || 'https://placehold.co/100x100/0284c7/ffffff?text=User',
+                        nativeLang: p.native_lang,
+                        learningLang: p.learning_lang,
+                        location: p.location || '未設定',
+                        bio: p.bio || ''
+                    }));
+                    
+                    // Merge Supabase members with local list
+                    dbMembers.forEach(m => {
+                        const idx = mockMembers.findIndex(x => x.id === m.id);
+                        if (idx >= 0) {
+                            mockMembers[idx] = m;
+                        } else {
+                            mockMembers.unshift(m);
+                        }
+                    });
+                    renderMembers();
+                }
+            } catch (err) {
+                console.error("Error fetching profiles:", err);
             }
         }
 
@@ -739,20 +853,18 @@ Now, let's get started.`,
             `).join('');
         }
 
-        /**
-         * MEMBERS & PHRASEBOOK RENDERERS
-         */
         function renderMembers() {
             const grid = document.getElementById('members-grid');
             grid.innerHTML = mockMembers.map(m => `
-                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm text-center flex flex-col items-center">
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm text-center flex flex-col items-center relative">
+                    ${m.id === currentUser.id ? '<span class="absolute top-3 right-3 bg-brand-100 text-brand-700 text-[10px] font-bold px-2 py-0.5 rounded-full">あなた</span>' : ''}
                     <img src="${m.avatar}" class="w-16 h-16 rounded-full object-cover border-2 border-brand-500 mb-3" alt="${m.name}">
-                    <h3 class="font-bold text-slate-900 text-base">${m.name}</h3>
-                    <p class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>${m.location}</p>
-                    <div class="flex justify-center gap-1.5 mb-3 text-[11px]">
-                        <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">母国語: ${m.native}</span>
+                    <h3 class="font-bold text-slate-900 text-base">${escapeHtml(m.name)}</h3>
+                    <p class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>${escapeHtml(m.location)}</p>
+                    <div class="flex flex-wrap justify-center gap-1 mb-3 text-[11px]">
+                        <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-medium">母国語: ${escapeHtml(m.nativeLang)}</span>
                     </div>
-                    <p class="text-xs text-slate-600 line-clamp-2 mt-auto">${m.bio}</p>
+                    <p class="text-xs text-slate-600 line-clamp-2 mt-auto">${escapeHtml(m.bio)}</p>
                 </div>
             `).join('');
         }
@@ -772,7 +884,7 @@ Now, let's get started.`,
         }
 
         /**
-         * REQUIREMENT 4: Supabase Database Setup & Modals
+         * SUPABASE INTEGRATION
          */
         function openSupabaseModal() {
             document.getElementById('supabase-modal').classList.remove('hidden');
@@ -807,15 +919,14 @@ Now, let's get started.`,
                     supabaseClient = window.supabase.createClient(url, key);
                     document.getElementById('supabase-status-text').innerText = 'Supabase Connected';
                     document.getElementById('supabase-status-text').parentElement.className = 'hidden md:flex items-center text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-300';
+                    fetchPostsFromSupabase();
+                    fetchMembersFromSupabase();
                 } catch(e) {
                     console.error("Supabase init error:", e);
                 }
             }
         }
 
-        /**
-         * UTILS
-         */
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
@@ -824,6 +935,8 @@ Now, let's get started.`,
             toastMsg.innerText = msg;
             if (type === 'error') {
                 toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else if (type === 'info') {
+                toastIcon.className = "fa-solid fa-circle-info text-sky-400";
             } else {
                 toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
             }
@@ -835,6 +948,7 @@ Now, let's get started.`,
         }
 
         function escapeHtml(str) {
+            if(!str) return '';
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
     </script>
