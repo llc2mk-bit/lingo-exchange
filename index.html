@@ -434,8 +434,135 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
 
     <!-- Direct JS Code logic -->
     <script>
-        // Global Supabase Client Instance
+        // Global State & Supabase Client Instance
         let supabaseClient = null;
+        let currentLang = 'ja';
+        let currentChatPartner = null;
+        let currentAvatarDataUrl = 'https://placehold.co/100x100/16a34a/ffffff?text=User';
+
+        // Sample Data for initial rendering
+        let samplePartners = [
+            { id: 'sample_1', name: 'Michi', native_lang: '日本語', learning_lang: 'ビサヤ語（Visayan / Cebuano）', bio: 'セブ島が大好きです！日常会話のビサヤ語を勉強したいです。', avatar: 'https://placehold.co/100x100/0038A8/ffffff?text=Michi' },
+            { id: 'sample_2', name: 'Grace', native_lang: 'ビサヤ語（Visayan / Cebuano）', bio: 'Gusto nako makat-on ug Hapones! Japanese language learner from Cebu.', learning_lang: '日本語', avatar: 'https://placehold.co/100x100/CE1126/ffffff?text=Grace' },
+            { id: 'sample_3', name: 'Kenji', native_lang: '日本語', learning_lang: '英語', bio: 'フィリピンのホスピタリティやカルチャーに興味があります！', avatar: 'https://placehold.co/100x100/BC002D/ffffff?text=Ken' }
+        ];
+
+        // Language Dictionary
+        const i18n = {
+            ja: {
+                navHome: "ホーム",
+                navPartners: "パートナーを探す",
+                navProfile: "プロフィール設定",
+                heroBadge: "日本 × フィリピン 言語・文化交流",
+                heroTitle: "日本語とビサヤ語・英語を話し、心をつなぐコミュニティ",
+                heroSubtitle: "言葉を学び合い、互いの文化をリスペクトし、未来の架け橋になろう。",
+                getStartedBtn: "さあ、始めましょう",
+                setupProfileBtn: "プロフィールを設定",
+                visionHeading: "LingoExchange について",
+                visionSubheading: "言葉を学ぶだけでなく、心を通わせる交流の場",
+                msgParagraph1: "このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。",
+                japanTitle: "日本について",
+                msgParagraph2: "日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。",
+                philippinesTitle: "フィリピンについて",
+                msgParagraph3: "フィリピンは、平均年齢が２４歳と若い国です。人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。",
+                msgParagraph4: "自然も豊かで、フルーツやマグロなどの魚もたくさん日本に輸入されています。",
+                msgParagraph5: "このアプリでお互いの国の言葉を勉強して、多くの人たちがお互いの国に関心を持ち、お互いの素晴らしい国を訪れることを願います。",
+                startNowBtn: "さあ、始めましょう。",
+                filterTitle: "パートナーを絞り込み",
+                nativeLangLabel: "母国語 (Native)",
+                learningLangLabel: "学びたい言語 (Learning)",
+                searchKeywordLabel: "キーワード検索",
+                optAll: "すべて (All)",
+                availablePartners: "登録中のメンバー",
+                profileTitle: "プロフィール設定",
+                profileSubtitle: "あなたの言語バックグラウンドと学びたい言語を登録してください。",
+                nameLabel: "お名前 / ニックネーム",
+                profileNativeLabel: "母国語 (Native Language)",
+                profileLearningLabel: "学びたい言語 (Language You Want to Learn)",
+                bioLabel: "自己紹介・メッセージ",
+                saveBtn: "保存する"
+            },
+            en: {
+                navHome: "Home",
+                navPartners: "Find Partners",
+                navProfile: "Profile Settings",
+                heroBadge: "Japan × Philippines Language Exchange",
+                heroTitle: "A Community Connecting Hearts Through Japanese, Visayan & English",
+                heroSubtitle: "Learn languages together, respect each other's culture, and build bridges for tomorrow.",
+                getStartedBtn: "Let's Get Started",
+                setupProfileBtn: "Setup Profile",
+                visionHeading: "About LingoExchange",
+                visionSubheading: "A place not only to learn languages, but to connect hearts",
+                msgParagraph1: "This site was created to deepen interaction between Japanese speakers and Visayan/Cebuano speakers.",
+                japanTitle: "About Japan",
+                msgParagraph2: "Japan is a country that values tradition and culture. However, with a declining youth population, the cooperation of people from the Philippines is essential. By learning Japanese, we hope many Filipino friends become interested in Japan and thrive in Japan.",
+                philippinesTitle: "About Philippines",
+                msgParagraph3: "The Philippines is a young nation with an average age of 24. Its people are known for their bright, friendly nature, high sense of hospitality, and deep family love prioritizing family first.",
+                msgParagraph4: "It is rich in nature, exporting abundant fruits and seafood such as tuna to Japan.",
+                msgParagraph5: "We hope this app helps people learn each other's languages, take an interest in each other's country, and visit these wonderful nations.",
+                startNowBtn: "Let's Get Started.",
+                filterTitle: "Filter Partners",
+                nativeLangLabel: "Native Language",
+                learningLangLabel: "Learning Language",
+                searchKeywordLabel: "Search Keyword",
+                optAll: "All",
+                availablePartners: "Registered Members",
+                profileTitle: "Profile Settings",
+                profileSubtitle: "Please register your language background and learning goals.",
+                nameLabel: "Name / Nickname",
+                profileNativeLabel: "Native Language",
+                profileLearningLabel: "Language You Want to Learn",
+                bioLabel: "Bio / Self-Introduction",
+                saveBtn: "Save Profile"
+            }
+        };
+
+        // Navigation Tab Switching
+        function switchTab(tabId) {
+            ['home', 'partners', 'profile', 'supabase-config'].forEach(t => {
+                const sec = document.getElementById(`tab-${t}`);
+                const nav = document.getElementById(`nav-${t === 'supabase-config' ? 'supabase' : t}`);
+                if (sec) sec.classList.add('hidden');
+                if (nav) {
+                    nav.classList.remove('text-brand-600', 'bg-brand-50');
+                    nav.classList.add('text-slate-600');
+                }
+            });
+
+            const activeSec = document.getElementById(`tab-${tabId}`);
+            const activeNav = document.getElementById(`nav-${tabId === 'supabase-config' ? 'supabase' : tabId}`);
+            if (activeSec) activeSec.classList.remove('hidden');
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-600');
+                activeNav.classList.add('text-brand-600', 'bg-brand-50');
+            }
+
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ja' ? 'en' : 'ja';
+            updateUI();
+        }
+
+        function updateUI() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[currentLang] && i18n[currentLang][key]) {
+                    el.textContent = i18n[currentLang][key];
+                }
+            });
+            const label = document.getElementById('current-lang-label');
+            if (label) {
+                label.textContent = currentLang === 'ja' ? 'English に切替' : '日本語 (Japanese)';
+            }
+        }
 
         function updateSupabaseStatus(isConnected, message = "") {
             const badge = document.getElementById('sb-status-badge');
@@ -448,6 +575,70 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
                 badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>未接続</span>`;
             }
         }
+
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_SIZE = 200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_SIZE) {
+                            height *= MAX_SIZE / width;
+                            width = MAX_SIZE;
+                        }
+                    } else {
+                        if (height > MAX_SIZE) {
+                            width *= MAX_SIZE / height;
+                            height = MAX_SIZE;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    currentAvatarDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    const previewImg = document.getElementById('avatar-preview');
+                    if (previewImg) previewImg.src = currentAvatarDataUrl;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadSavedProfile() {
+            const saved = localStorage.getItem('lingo_user_profile');
+            if (saved) {
+                try {
+                    const profile = JSON.parse(saved);
+                    if (document.getElementById('user-name')) document.getElementById('user-name').value = profile.name || '';
+                    if (document.getElementById('user-native')) document.getElementById('user-native').value = profile.native_lang || '日本語';
+                    if (document.getElementById('user-learning')) document.getElementById('user-learning').value = profile.learning_lang || 'ビサヤ語（Visayan / Cebuano）';
+                    if (document.getElementById('user-bio')) document.getElementById('user-bio').value = profile.bio || '';
+                    if (profile.avatar) {
+                        currentAvatarDataUrl = profile.avatar;
+                        const previewImg = document.getElementById('avatar-preview');
+                        if (previewImg) previewImg.src = profile.avatar;
+                    }
+                    const existingIdx = samplePartners.findIndex(p => p.id === profile.id);
+                    if (existingIdx !== -1) {
+                        samplePartners[existingIdx] = profile;
+                    } else {
+                        samplePartners.unshift(profile);
+                    }
+                } catch(e) { console.error('Failed to parse saved profile', e); }
+            }
+        }
+
         async function saveProfile(e) {
             e.preventDefault();
             const name = document.getElementById('user-name').value;
@@ -476,7 +667,6 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
 
             filterPartners();
 
-            // Check if supabaseClient can be initialized on the fly if credentials exist in localStorage
             if (!supabaseClient) {
                 const url = localStorage.getItem('lingo_sb_url');
                 const key = localStorage.getItem('lingo_sb_key');
@@ -501,19 +691,100 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
                     }]);
 
                     if (error) {
-                        alert('Supabaseへの保存時にエラーが発生しました: ' + error.message + '\n※SQL Editorでテーブル作成とRLSポリシーが実行されているかご確認ください。');
+                        alert('Supabaseへの保存エラー: ' + error.message);
                     } else {
-                        alert('プロフィールがクラウドに保存され、他のユーザーと共有されました！');
+                        alert('プロフィールがクラウドに保存され、全ユーザーと共有されました！');
                         await loadSupabaseProfiles();
                     }
                 } catch(err) {
-                    alert('Supabase送信エラー: ' + err.message);
+                    alert('Supabase通信エラー: ' + err.message);
                 }
             } else {
-                alert('プロフィールがローカルに保存されました。\n他のユーザーとリアルタイム共有するには、画面右上の「Supabase」タブでURLとAnon Keyを入力して「接続を保存」を押してください。');
+                alert('プロフィールがローカルに保存されました。\n他のユーザーと共有するには「Supabase」タブでURLとAnon Keyを入力してください。');
             }
 
             switchTab('partners');
+        }
+
+        function filterPartners() {
+            const nativeVal = document.getElementById('filter-native')?.value || 'ALL';
+            const learningVal = document.getElementById('filter-learning')?.value || 'ALL';
+            const keyword = document.getElementById('filter-keyword')?.value.toLowerCase().trim() || '';
+
+            const filtered = samplePartners.filter(p => {
+                const matchNative = (nativeVal === 'ALL') || (p.native_lang === nativeVal);
+                const matchLearning = (learningVal === 'ALL') || (p.learning_lang === learningVal);
+                const matchKeyword = !keyword || 
+                    (p.name && p.name.toLowerCase().includes(keyword)) || 
+                    (p.bio && p.bio.toLowerCase().includes(keyword));
+                return matchNative && matchLearning && matchKeyword;
+            });
+
+            renderPartners(filtered);
+        }
+
+        function renderPartners(partners) {
+            const container = document.getElementById('partners-grid');
+            const countEl = document.getElementById('partner-count');
+            if (!container) return;
+
+            if (countEl) countEl.textContent = `${partners.length} 人`;
+            container.innerHTML = '';
+
+            if (partners.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-500 space-y-2">
+                        <i class="fa-solid fa-users-slash text-3xl text-slate-300"></i>
+                        <p>条件に合うパートナーが見つかりませんでした。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            partners.forEach(partner => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4";
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${escapeHtml(partner.avatar || 'https://placehold.co/100x100/0038A8/ffffff?text=U')}" class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm">
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(partner.name)}</h4>
+                                <span class="text-[11px] font-semibold text-slate-400">ID: ${escapeHtml(partner.id.substring(0,8))}...</span>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex items-center justify-between bg-slate-50 p-2 rounded-lg">
+                                <span class="text-slate-500">母国語:</span>
+                                <span class="font-bold text-slate-800">${escapeHtml(partner.native_lang)}</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-emerald-50/50 p-2 rounded-lg border border-emerald-100">
+                                <span class="text-emerald-700 font-medium">学びたい言語:</span>
+                                <span class="font-bold text-emerald-800">${escapeHtml(partner.learning_lang)}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed">${escapeHtml(partner.bio || '（自己紹介は未設定です）')}</p>
+                    </div>
+                    <button onclick="openChat('${escapeHtml(partner.id)}')" class="w-full py-2.5 rounded-xl font-bold bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-comments"></i>
+                        <span>メッセージを送る</span>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openChat(partnerId) {
+            const partner = samplePartners.find(p => p.id === partnerId);
+            if (!partner) return;
+
+            currentChatPartner = partner;
+            document.getElementById('chat-partner-avatar').src = partner.avatar || 'https://placehold.co/100x100/0038A8/ffffff?text=U';
+            document.getElementById('chat-partner-name').textContent = partner.name;
+            document.getElementById('chat-partner-sub').textContent = `${partner.learning_lang} を学習中`;
+
+            document.getElementById('chat-modal').classList.remove('hidden');
+            renderChatMessages();
         }
 
         function closeChat() {
