@@ -324,11 +324,18 @@
         <!-- TAB 4: SUPABASE CONFIGURATION -->
         <section id="tab-supabase-config" class="hidden max-w-3xl mx-auto px-4 sm:px-6 py-8">
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 sm:p-10 space-y-6">
-                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
-                    <i class="fa-solid fa-database text-2xl text-emerald-600"></i>
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Supabase 連携設定</h2>
-                        <p class="text-sm text-slate-500">無料の Supabase データベースと接続してリアルタイム接続を有効化します。</p>
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-database text-2xl text-emerald-600"></i>
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">Supabase 連携設定</h2>
+                            <p class="text-sm text-slate-500">無料の Supabase データベースと接続してリアルタイム接続を有効化します。</p>
+                        </div>
+                    </div>
+                    <!-- Connection Status Badge -->
+                    <div id="sb-status-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                        <span>未接続</span>
                     </div>
                 </div>
 
@@ -370,14 +377,14 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
                 <form onsubmit="saveSupabaseConfig(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase URL</label>
-                        <input type="url" id="sb-url" placeholder="https://xyzcompany.supabase.co" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <input type="url" id="sb-url" required placeholder="https://xxxxxx.supabase.co" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
-                        <input type="password" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key (Publishable key)</label>
+                        <input type="password" id="sb-key" required placeholder="sbp_... または eyJhbGci..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
-                    <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition">
-                        接続を保存 &amp; 同期
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-6 rounded-xl transition shadow-md">
+                        <i class="fa-solid fa-link mr-2"></i>接続を保存 &amp; 同期
                     </button>
                 </form>
             </div>
@@ -430,249 +437,17 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
         // Global Supabase Client Instance
         let supabaseClient = null;
 
-        // ==========================================
-        // 1. Multilingual i18n Dictionaries
-        // ==========================================
-        const translations = {
-            ja: {
-                navHome: "ホーム",
-                navPartners: "パートナーを探す",
-                navProfile: "プロフィール設定",
-                heroBadge: "日本 × フィリピン 言語・文化交流",
-                heroTitle: "日本語とビサヤ語・英語を話し、心をつなぐコミュニティ",
-                heroSubtitle: "言葉を学び合い、互いの文化をリスペクトし、未来の架け橋になろう。",
-                getStartedBtn: "さあ、始めましょう",
-                setupProfileBtn: "プロフィールを設定",
-                visionHeading: "LingoExchange について",
-                visionSubheading: "言葉を学ぶだけでなく、心を通わせる交流の場",
-                msgParagraph1: "このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。",
-                japanTitle: "日本について",
-                msgParagraph2: "日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。",
-                philippinesTitle: "フィリピンについて",
-                msgParagraph3: "フィリピンは、平均年齢が２４歳と若い国です、人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。",
-                msgParagraph4: "自然も豊かで、フルーツやマグロなどの魚もたくさん日本に輸入されています。",
-                msgParagraph5: "このアプリでお互いの国の言葉を勉強して、多くの人たちがお互いの国に関心を持ち、お互いの素晴らしい国を訪れることを願います。",
-                startNowBtn: "さあ、始めましょう。",
-                filterTitle: "パートナーを絞り込み",
-                nativeLangLabel: "母国語 (Native)",
-                learningLangLabel: "学びたい言語 (Learning)",
-                searchKeywordLabel: "キーワード検索",
-                optAll: "すべて (All)",
-                availablePartners: "登録中のメンバー",
-                profileTitle: "プロフィール設定",
-                profileSubtitle: "あなたの言語バックグラウンドと学びたい言語を登録してください。",
-                nameLabel: "お名前 / ニックネーム",
-                profileNativeLabel: "母国語 (Native Language)",
-                profileLearningLabel: "学びたい言語 (Language You Want to Learn)",
-                bioLabel: "自己紹介・メッセージ",
-                saveBtn: "保存する",
-                langToggleBtn: "English に切替"
-            },
-            en: {
-                navHome: "Home",
-                navPartners: "Find Partners",
-                navProfile: "Profile Settings",
-                heroBadge: "Japan × Philippines Language Exchange",
-                heroTitle: "Connecting Hearts through Japanese, Visayan & English",
-                heroSubtitle: "Learn each other's languages, respect cultures, and build bridges for the future.",
-                getStartedBtn: "Let's Get Started",
-                setupProfileBtn: "Setup Profile",
-                visionHeading: "About LingoExchange",
-                visionSubheading: "A place not just to learn languages, but to connect hearts",
-                msgParagraph1: "This site was created to deepen exchanges between Japanese speakers and Visayan speakers.",
-                japanTitle: "About Japan",
-                msgParagraph2: "Japan values tradition and culture. However, the youth population is declining year by year, and the cooperation of Filipino people is needed. By learning Japanese, we hope many Filipino people will gain interest in Japan and thrive here.",
-                philippinesTitle: "About the Philippines",
-                msgParagraph3: "The Philippines is a young nation with an average age of 24. Its people are bright, friendly, hospitable, and filled with deep family love that prioritizes family above all.",
-                msgParagraph4: "It is rich in nature, exporting abundant fruits, tuna, and other fish to Japan.",
-                msgParagraph5: "We hope that by studying each other's languages on this app, many people will develop interest in each other's countries and visit these wonderful nations.",
-                startNowBtn: "Let's Get Started.",
-                filterTitle: "Filter Partners",
-                nativeLangLabel: "Native Language",
-                learningLangLabel: "Learning Language",
-                searchKeywordLabel: "Keyword Search",
-                optAll: "All",
-                availablePartners: "Registered Members",
-                profileTitle: "Profile Settings",
-                profileSubtitle: "Please set your native language and the language you wish to learn.",
-                nameLabel: "Name / Nickname",
-                profileNativeLabel: "Native Language",
-                profileLearningLabel: "Language You Want to Learn",
-                bioLabel: "Bio / Self-Introduction",
-                saveBtn: "Save Profile",
-                langToggleBtn: "日本語 に切替"
+        function updateSupabaseStatus(isConnected, message = "") {
+            const badge = document.getElementById('sb-status-badge');
+            if (!badge) return;
+            if (isConnected) {
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center gap-1.5";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>接続完了 ${message ? '(' + message + ')' : ''}</span>`;
+            } else {
+                badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center gap-1.5";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>未接続</span>`;
             }
-        };
-
-        let currentLang = 'ja';
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'ja' ? 'en' : 'ja';
-            updateUI();
         }
-
-        function updateUI() {
-            const dict = translations[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dict[key]) {
-                    el.textContent = dict[key];
-                }
-            });
-            document.getElementById('current-lang-label').textContent = dict.langToggleBtn;
-        }
-
-        // ==========================================
-        // 2. Navigation Logic
-        // ==========================================
-        function switchTab(tabId) {
-            ['home', 'partners', 'profile', 'supabase-config'].forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                const nav = document.getElementById(`nav-${t}`);
-                if (t === tabId) {
-                    el.classList.remove('hidden');
-                    if(nav) {
-                        nav.classList.add('text-brand-600', 'bg-brand-50');
-                        nav.classList.remove('text-slate-600');
-                    }
-                } else {
-                    el.classList.add('hidden');
-                    if(nav) {
-                        nav.classList.remove('text-brand-600', 'bg-brand-50');
-                        nav.classList.add('text-slate-600');
-                    }
-                }
-            });
-            // Close mobile menu
-            document.getElementById('mobile-menu').classList.add('hidden');
-        }
-
-        function toggleMobileMenu() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        }
-
-        // ==========================================
-        // 3. Mock & Supabase Data Management
-        // ==========================================
-        let currentAvatarDataUrl = "https://placehold.co/100x100/16a34a/ffffff?text=User";
-        let currentChatPartner = null;
-
-        let samplePartners = [
-            {
-                id: '1',
-                name: "Taro (タロウ)",
-                native_lang: "日本語",
-                learning_lang: "ビサヤ語（Visayan / Cebuano）",
-                bio: "セブ島に旅行したことがあり、ビサヤ語を本格的に勉強したいです！日常会話から教えてください。",
-                avatar: "https://placehold.co/100x100/166534/ffffff?text=Taro"
-            },
-            {
-                id: '2',
-                name: "Joy (ジョイ)",
-                native_lang: "ビサヤ語（Visayan / Cebuano）",
-                learning_lang: "日本語",
-                bio: "Maayong adlaw! I am from Cebu. I love Japanese culture and want to work in Japan someday!",
-                avatar: "https://placehold.co/100x100/0038A8/ffffff?text=Joy"
-            },
-            {
-                id: '3',
-                name: "Mark (マーク)",
-                native_lang: "英語",
-                learning_lang: "日本語",
-                bio: "Hi! I speak English and Cebuano. Looking for a Japanese conversation practice partner.",
-                avatar: "https://placehold.co/100x100/CE1126/ffffff?text=Mark"
-            }
-        ];
-
-        // 画像選択時のリアルタイムプレビュー & リサイズ（軽量化）
-        function previewAvatar(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 200;
-                    canvas.height = 200;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, 200, 200);
-                    currentAvatarDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                    document.getElementById('avatar-preview').src = currentAvatarDataUrl;
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function renderPartners(data) {
-            const grid = document.getElementById('partners-grid');
-            document.getElementById('partner-count').textContent = `${data.length} 人`;
-            grid.innerHTML = '';
-
-            if (data.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-slate-400">
-                        <i class="fa-solid fa-user-slash text-4xl mb-2"></i>
-                        <p>該当するパートナーが見つかりませんでした。</p>
-                    </div>
-                `;
-                return;
-            }
-
-            data.forEach(p => {
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition space-y-4 flex flex-col justify-between";
-                card.innerHTML = `
-                    <div class="space-y-3">
-                        <div class="flex items-center gap-3">
-                            <img src="${p.avatar || 'https://placehold.co/100x100/94a3b8/ffffff?text=User'}" class="w-12 h-12 rounded-full object-cover border border-slate-200">
-                            <div>
-                                <h4 class="font-bold text-slate-900">${escapeHtml(p.name)}</h4>
-                                <span class="text-xs text-slate-400">ID: ${p.id.substring(0, 8)}</span>
-                            </div>
-                        </div>
-                        <div class="space-y-1.5 text-xs">
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold">母国語</span>
-                                <span class="text-slate-700 font-medium">${escapeHtml(p.native_lang)}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">学習中</span>
-                                <span class="text-slate-700 font-medium">${escapeHtml(p.learning_lang)}</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-600 line-clamp-3 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            ${escapeHtml(p.bio || '自己紹介はありません')}
-                        </p>
-                    </div>
-                    <button onclick="startChat('${p.id}')" class="w-full py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
-                        <i class="fa-regular fa-paper-plane"></i>
-                        <span>メッセージを送る</span>
-                    </button>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function filterPartners() {
-            const nativeVal = document.getElementById('filter-native').value;
-            const learningVal = document.getElementById('filter-learning').value;
-            const keyword = document.getElementById('filter-keyword').value.toLowerCase();
-
-            const filtered = samplePartners.filter(p => {
-                const matchNative = nativeVal === 'ALL' || p.native_lang === nativeVal;
-                const matchLearning = learningVal === 'ALL' || p.learning_lang === learningVal;
-                const matchKeyword = !keyword || 
-                    (p.name && p.name.toLowerCase().includes(keyword)) || 
-                    (p.bio && p.bio.toLowerCase().includes(keyword));
-                return matchNative && matchLearning && matchKeyword;
-            });
-
-            renderPartners(filtered);
-        }
-
         async function saveProfile(e) {
             e.preventDefault();
             const name = document.getElementById('user-name').value;
@@ -701,6 +476,19 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
 
             filterPartners();
 
+            // Check if supabaseClient can be initialized on the fly if credentials exist in localStorage
+            if (!supabaseClient) {
+                const url = localStorage.getItem('lingo_sb_url');
+                const key = localStorage.getItem('lingo_sb_key');
+                if (url && key && window.supabase) {
+                    try {
+                        supabaseClient = window.supabase.createClient(url.trim(), key.trim());
+                    } catch(err) {
+                        console.error("Supabase dynamic setup error:", err);
+                    }
+                }
+            }
+
             if (supabaseClient) {
                 try {
                     const { error } = await supabaseClient.from('profiles').upsert([{ 
@@ -713,61 +501,19 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
                     }]);
 
                     if (error) {
-                        alert('Supabaseへの保存時にエラーが発生しました: ' + error.message + '\n※SupabaseのSQL EditorでRLSポリシーを設定したか確認してください。');
+                        alert('Supabaseへの保存時にエラーが発生しました: ' + error.message + '\n※SQL Editorでテーブル作成とRLSポリシーが実行されているかご確認ください。');
                     } else {
-                        alert('プロフィールが保存・他のユーザーに共有されました！');
+                        alert('プロフィールがクラウドに保存され、他のユーザーと共有されました！');
                         await loadSupabaseProfiles();
                     }
                 } catch(err) {
                     alert('Supabase送信エラー: ' + err.message);
                 }
             } else {
-                alert('プロフィールがローカルに保存されました。（他のユーザーと共有するにはSupabaseを設定してください）');
+                alert('プロフィールがローカルに保存されました。\n他のユーザーとリアルタイム共有するには、画面右上の「Supabase」タブでURLとAnon Keyを入力して「接続を保存」を押してください。');
             }
 
             switchTab('partners');
-        }
-
-        function loadSavedProfile() {
-            const saved = localStorage.getItem('lingo_user_profile');
-            if (saved) {
-                try {
-                    const profile = JSON.parse(saved);
-                    document.getElementById('user-name').value = profile.name || '';
-                    document.getElementById('user-native').value = profile.native_lang || '日本語';
-                    document.getElementById('user-learning').value = profile.learning_lang || 'ビサヤ語（Visayan / Cebuano）';
-                    document.getElementById('user-bio').value = profile.bio || '';
-                    if (profile.avatar) {
-                        currentAvatarDataUrl = profile.avatar;
-                        document.getElementById('avatar-preview').src = profile.avatar;
-                    }
-
-                    const existingIdx = samplePartners.findIndex(p => p.id === profile.id);
-                    if (existingIdx !== -1) {
-                        samplePartners[existingIdx] = profile;
-                    } else {
-                        samplePartners.unshift(profile);
-                    }
-                } catch(err) {
-                    console.error("プロフィール復元エラー:", err);
-                }
-            }
-        }
-
-        // ==========================================
-        // 4. Chat System Logic
-        // ==========================================
-        function startChat(partnerId) {
-            const partner = samplePartners.find(p => p.id === partnerId);
-            if (!partner) return;
-
-            currentChatPartner = partner;
-            document.getElementById('chat-partner-name').textContent = partner.name;
-            document.getElementById('chat-partner-sub').textContent = `${partner.native_lang} → ${partner.learning_lang}`;
-            document.getElementById('chat-partner-avatar').src = partner.avatar || 'https://placehold.co/100x100/94a3b8/ffffff?text=User';
-
-            renderChatMessages();
-            document.getElementById('chat-modal').classList.remove('hidden');
         }
 
         function closeChat() {
@@ -883,16 +629,23 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
 
         function saveSupabaseConfig(e) {
             e.preventDefault();
-            const url = document.getElementById('sb-url').value;
-            const key = document.getElementById('sb-key').value;
+            const url = document.getElementById('sb-url').value.trim();
+            const key = document.getElementById('sb-key').value.trim();
+
+            if (!url || !key) {
+                alert('URLとAnon Keyの両方を入力してください。');
+                return;
+            }
 
             try {
                 supabaseClient = window.supabase.createClient(url, key);
                 localStorage.setItem('lingo_sb_url', url);
                 localStorage.setItem('lingo_sb_key', key);
-                alert('Supabaseの設定が保存されました！');
+                updateSupabaseStatus(true);
+                alert('Supabaseへの接続設定が保存されました！');
                 loadSupabaseProfiles();
             } catch (err) {
+                updateSupabaseStatus(false);
                 alert('Supabaseの初期化に失敗しました: ' + err.message);
             }
         }
@@ -904,9 +657,11 @@ CREATE POLICY "Allow public insert messages" ON messages FOR INSERT WITH CHECK (
                 try {
                     document.getElementById('sb-url').value = url;
                     document.getElementById('sb-key').value = key;
-                    supabaseClient = window.supabase.createClient(url, key);
+                    supabaseClient = window.supabase.createClient(url.trim(), key.trim());
+                    updateSupabaseStatus(true);
                     loadSupabaseProfiles();
                 } catch (e) {
+                    updateSupabaseStatus(false);
                     console.warn("Auto connect to Supabase failed:", e);
                 }
             }
