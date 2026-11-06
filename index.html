@@ -3,615 +3,428 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoExchange - 日サヤ言語交換コミュニティ</title>
-    <!-- Tailwind CSS -->
+    <title>LingoExchange - ビサヤ語 & 日本語 言語交換コミュニティ</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter & Noto Sans JP -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0284c7',
-                            600: '#0369a1',
-                            700: '#075985',
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
                         },
-                        philippines: '#0038a8',
-                        japan: '#bc002d'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                        philippines: {
+                            blue: '#0038a8',
+                            red: '#ce1126',
+                            yellow: '#fcd116'
+                        }
                     }
                 }
             }
         }
     </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-scalable-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
     <style>
         .gradient-bg {
-            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+            background: linear-gradient(135deg, #0038a8 0%, #16a34a 50%, #ce1126 100%);
         }
-        .hero-pattern {
-            background-color: #f8fafc;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 20px 20px;
+        .chat-bubble-sender {
+            border-bottom-right-radius: 0;
         }
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        .chat-bubble-receiver {
+            border-bottom-left-radius: 0;
         }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col pb-16 md:pb-0">
 
     <!-- Header Navigation -->
-    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center space-x-2 sm:space-x-3 cursor-pointer" onclick="navigateTo('landing')">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-md shrink-0">
-                    LX
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('landing')">
+                <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white text-xl font-bold shadow">
+                    L
                 </div>
                 <div>
-                    <span class="text-base sm:text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600">LingoExchange</span>
-                    <span class="hidden md:inline-block text-xs bg-brand-100 text-brand-700 font-semibold px-2 py-0.5 rounded-full ml-2">JP ✕ Visaya</span>
+                    <h1 class="font-bold text-xl text-slate-900 leading-tight">LingoExchange</h1>
+                    <p class="text-xs text-slate-500">Bisaya ✕ Japanese Exchange</p>
                 </div>
             </div>
 
-            <!-- Header Controls & Nav -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <!-- UI Language Switcher (JA / EN) -->
-                <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-medium">
-                    <button id="btn-lang-ja" onclick="setUiLanguage('ja')" class="px-2 py-1 rounded-md transition-all font-semibold bg-white text-slate-800 shadow-sm">
-                        🇯🇵
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <!-- Navigation Items -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <button onclick="navigateTo('landing')" class="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-house mr-1"></i> <span data-i18n="nav.home">ホーム</span>
                     </button>
-                    <button id="btn-lang-en" onclick="setUiLanguage('en')" class="px-2 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800">
-                        🇺🇸
+                    <button onclick="navigateTo('members')" class="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-users mr-1"></i> <span data-i18n="nav.members">メンバーを探す</span>
                     </button>
-                </div>
+                    <button onclick="navigateTo('feed')" class="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-comments mr-1"></i> <span data-i18n="nav.feed">フィード</span>
+                    </button>
+                    <button onclick="navigateTo('phrases')" class="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-book-open mr-1"></i> <span data-i18n="nav.phrases">単語・フレーズ</span>
+                    </button>
+                </nav>
 
-                <!-- Profile Navigation / Auth Status -->
-                <div id="nav-user-area" class="hidden flex items-center space-x-1 sm:space-x-2">
-                    <button onclick="navigateTo('feed')" class="p-1.5 sm:p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Feed">
-                        <i class="fa-solid fa-newspaper text-base sm:text-lg"></i>
-                    </button>
-                    <button onclick="navigateTo('members')" class="p-1.5 sm:p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Members">
-                        <i class="fa-solid fa-users text-base sm:text-lg"></i>
-                    </button>
-                    <button onclick="navigateTo('phrasebook')" class="p-1.5 sm:p-2 text-slate-600 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Phrasebook">
-                        <i class="fa-solid fa-book-open text-base sm:text-lg"></i>
-                    </button>
-                    <button onclick="navigateTo('profile')" class="flex items-center space-x-2 pl-1.5 sm:pl-2 border-l border-slate-200">
-                        <img id="header-avatar" src="https://placehold.co/100x100/0284c7/ffffff?text=User" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-brand-500" alt="Avatar">
-                    </button>
-                </div>
+                <!-- Language Toggle Button -->
+                <button onclick="toggleUiLanguage()" class="px-3 py-1.5 text-xs font-semibold rounded-full border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center space-x-1 shadow-sm transition">
+                    <i class="fa-solid fa-globe text-brand-600"></i>
+                    <span id="langToggleText">English</span>
+                </button>
 
-                <div id="nav-guest-area">
-                    <button onclick="navigateTo('profile')" class="bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg transition shadow-sm whitespace-nowrap">
-                        <span data-i18n="nav_register">登録 / 開始</span>
-                    </button>
-                </div>
+                <!-- User Profile / Register Button -->
+                <button onclick="navigateTo('profile')" class="flex items-center space-x-2 p-1 rounded-full border border-slate-200 hover:bg-slate-100 transition">
+                    <img id="navAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-grow">
-        
-        <!-- SECTION 1: LANDING PAGE -->
-        <section id="view-landing" class="view-section hero-pattern py-8 md:py-16">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6">
-                <!-- Main Concept Card -->
-                <div class="bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden mb-10 transform transition duration-300 hover:shadow-2xl">
-                    <div class="gradient-bg p-6 sm:p-8 text-white text-center relative overflow-hidden">
-                        <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl font-black">LX</div>
-                        <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold tracking-wider uppercase mb-3">
-                            Japan 🤝 Philippines Exchange
-                        </span>
-                        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight mb-2">
-                            LingoExchange
-                        </h1>
-                        <p class="text-sky-100 text-xs sm:text-base max-w-xl mx-auto font-medium" data-i18n="landing_subtitle">
-                            日本語を話す人と、ビサヤ語（セブアノ語）を話す人たちのためのオープンコミュニティ
+    <!-- Main Container -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-4">
+
+        <!-- SECTION 1: Landing Page (ご指定のメッセージ) -->
+        <section id="view-landing" class="view-section">
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden my-4">
+                <div class="gradient-bg p-8 text-white text-center relative">
+                    <h2 class="text-2xl md:text-4xl font-extrabold mb-3">LingoExchange</h2>
+                    <p class="text-sm md:text-lg opacity-90 font-medium">Japanese ✕ Visayan (Cebuano) Community</p>
+                </div>
+                
+                <div class="p-6 md:p-10 space-y-6 leading-relaxed text-slate-700 text-base md:text-lg">
+                    <div class="bg-brand-50 border-l-4 border-brand-500 p-4 rounded-r-lg">
+                        <p class="font-bold text-brand-700 text-lg mb-2" data-i18n="landing.title">
+                            このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
                         </p>
                     </div>
 
-                    <!-- Welcome Letter / Mission Statement -->
-                    <div class="p-5 sm:p-10 space-y-6 text-slate-700 leading-relaxed text-sm sm:text-lg">
-                        <div class="bg-sky-50/70 border-l-4 border-brand-500 p-4 sm:p-5 rounded-r-xl">
-                            <p id="landing-text-body" class="whitespace-pre-line text-slate-800 font-normal">
-このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
-日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。
-フィリピンは、平均年齢が２４歳と若い国です、人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。
-自然も豊かで、フルーツやマグロなどの魚もたくさん日本に輸入されています。
-このアプリでお互いの国の言葉を勉強して、多くの人たちがお互いの国に関心を持ち、お互いの素晴らしい国を訪れることを願います。
-さあ、始めましょう。
-                            </p>
-                        </div>
-
-                        <!-- Highlights grid -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-                                <div class="text-3xl mb-2">🇯🇵 🇵🇭</div>
-                                <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="card1_title">言語の相互学習</h3>
-                                <p class="text-xs text-slate-500" data-i18n="card1_desc">日本語・ビサヤ語・英語を使った自然なコミュニケーション</p>
-                            </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-                                <div class="text-3xl mb-2">🤝</div>
-                                <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="card2_title">文化とフレンドシップ</h3>
-                                <p class="text-xs text-slate-500" data-i18n="card2_desc">お互いの国の伝統、文化、日常をシェアし合おう</p>
-                            </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-                                <div class="text-3xl mb-2">🏝️</div>
-                                <h3 class="font-bold text-slate-900 text-sm mb-1" data-i18n="card3_title">新しいつながり</h3>
-                                <p class="text-xs text-slate-500" data-i18n="card3_desc">日本とフィリピン（セブ・ミンダナオ等）を結ぶ架け橋に</p>
-                            </div>
-                        </div>
-
-                        <!-- CTA Button -->
-                        <div class="text-center pt-4">
-                            <button onclick="navigateTo('profile')" class="gradient-bg text-white font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 text-base sm:text-lg w-full sm:w-auto inline-flex items-center justify-center space-x-2">
-                                <span data-i18n="cta_start">さあ、始めましょう（プロフィール登録）</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 2 & 3: PROFILE SETUP & EDIT -->
-        <section id="view-profile" class="view-section hidden py-8">
-            <div class="max-w-2xl mx-auto px-4">
-                <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-5 sm:p-8">
-                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900 mb-6 flex items-center" data-i18n="profile_heading">
-                        <i class="fa-solid fa-id-card text-brand-600 mr-3"></i>プロフィール設定
-                    </h2>
-
-                    <form id="profile-form" onsubmit="saveProfile(event)" class="space-y-6">
-                        
-                        <!-- Profile Icon File Upload & Instant Preview -->
-                        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                            <div class="relative group">
-                                <img id="profile-avatar-preview" 
-                                     src="https://placehold.co/150x150/0284c7/ffffff?text=Icon" 
-                                     class="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-md" 
-                                     alt="Profile Icon">
-                                <label for="avatar-file-input" class="absolute bottom-0 right-0 bg-brand-600 hover:bg-brand-700 text-white p-2 rounded-full shadow-md cursor-pointer transition">
-                                    <i class="fa-solid fa-camera"></i>
-                                </label>
-                            </div>
-                            
-                            <div class="flex-1 text-center sm:text-left space-y-2">
-                                <label class="block text-sm font-semibold text-slate-700" data-i18n="profile_icon_label">
-                                    プロフィールアイコン画像
-                                </label>
-                                <p class="text-xs text-slate-500" data-i18n="profile_icon_help">
-                                    PCやスマホの写真（JPEG, PNG等）を選択するだけでアイコンが自動的に切り替わります。
-                                </p>
-                                <div class="inline-block">
-                                    <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/gif,image/webp" onchange="handleImageUpload(event)" class="hidden">
-                                    <label for="avatar-file-input" class="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm transition">
-                                        <i class="fa-solid fa-upload mr-2 text-brand-600"></i>
-                                        <span data-i18n="btn_choose_image">画像を選択</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Name Input -->
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1" data-i18n="lbl_name">お名前 / ニックネーム *</label>
-                            <input type="text" id="user-name" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900" placeholder="e.g. Taro / Maria">
-                        </div>
-
-                        <!-- Languages Selection -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- Native Language -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1" data-i18n="lbl_native">
-                                    母国語 (Native Language) *
-                                </label>
-                                <select id="user-native-lang" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 font-medium">
-                                    <option value="日本語">🇯🇵 日本語 (Japanese)</option>
-                                    <option value="ビサヤ語">🇵🇭 ビサヤ語 (Visayan / Cebuano)</option>
-                                    <option value="英語">🇺🇸 英語 (English)</option>
-                                </select>
-                            </div>
-
-                            <!-- Learning Language -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1" data-i18n="lbl_learning">
-                                    学びたい言語 (Learning) *
-                                </label>
-                                <select id="user-learning-lang" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900 font-medium">
-                                    <option value="ビサヤ語（Visayan / Cebuano）">🇵🇭 ビサヤ語（Visayan / Cebuano）</option>
-                                    <option value="日本語">🇯🇵 日本語 (Japanese)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Region / Location -->
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1" data-i18n="lbl_location">居住地域 / 出身地</label>
-                            <input type="text" id="user-location" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900" placeholder="e.g. Tokyo, Japan / Cebu, Philippines">
-                        </div>
-
-                        <!-- Bio / Self Introduction -->
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1" data-i18n="lbl_bio">自己紹介 (Bio)</label>
-                            <textarea id="user-bio" rows="3" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-900" placeholder="趣味や勉強したいことについて教えてください..."></textarea>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="pt-4 flex items-center justify-end space-x-3">
-                            <button type="submit" class="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-bold px-8 py-3 rounded-xl shadow-md transition">
-                                <i class="fa-solid fa-floppy-disk mr-2"></i>
-                                <span data-i18n="btn_save_profile">保存してタイムラインに進む</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 4: COMMUNITY FEED / TIMELINE -->
-        <section id="view-feed" class="view-section hidden py-8">
-            <div class="max-w-4xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                <!-- Left Sidebar: User Mini Profile -->
-                <div class="md:col-span-1 space-y-4">
-                    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm text-center">
-                        <img id="side-avatar" src="https://placehold.co/100x100/0284c7/ffffff?text=User" class="w-20 h-20 rounded-full mx-auto object-cover border-2 border-brand-500 mb-3" alt="My Profile">
-                        <h3 id="side-name" class="font-bold text-slate-900 text-lg">---</h3>
-                        <p id="side-langs" class="text-xs text-slate-500 mt-1">---</p>
-                        <div class="mt-4 pt-4 border-t border-slate-100 flex justify-center space-x-2">
-                            <button onclick="navigateTo('profile')" class="text-xs font-medium bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 transition">
-                                <i class="fa-solid fa-pen mr-1"></i> <span data-i18n="btn_edit_profile">編集</span>
-                            </button>
-                        </div>
+                    <div class="space-y-4 text-slate-600">
+                        <p data-i18n="landing.p1">
+                            日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。
+                        </p>
+                        <p data-i18n="landing.p2">
+                            フィリピンは、平均年齢が２４歳と若い国です。人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。
+                        </p>
+                        <p data-i18n="landing.p3">
+                            自然も豊かで、フルーツやマグロなどの魚もたくさん日本に輸入されています。
+                        </p>
+                        <p data-i18n="landing.p4">
+                            このアプリでお互いの国の言葉を勉強して、多くの人たちがお互いの国に関心を持ち、お互いの素晴らしい国を訪れることを願います。
+                        </p>
                     </div>
 
-                    <!-- Quick Navigation Cards -->
-                    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2">
-                        <button onclick="navigateTo('members')" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-slate-700 font-medium text-sm transition">
-                            <span class="flex items-center"><i class="fa-solid fa-users text-brand-600 mr-2.5"></i> <span data-i18n="nav_members">メンバーを探す</span></span>
-                            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
-                        </button>
-                        <button onclick="navigateTo('phrasebook')" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 text-slate-700 font-medium text-sm transition">
-                            <span class="flex items-center"><i class="fa-solid fa-book-open text-emerald-600 mr-2.5"></i> <span data-i18n="nav_phrases">ビサヤ語フレーズ集</span></span>
-                            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+                    <div class="pt-6 text-center">
+                        <button onclick="navigateTo('profile')" class="gradient-bg text-white font-bold px-8 py-4 rounded-xl text-lg shadow-lg hover:opacity-95 transform hover:-translate-y-0.5 transition duration-150 inline-flex items-center space-x-2">
+                            <span data-i18n="landing.startBtn">さあ、始めましょう！</span>
+                            <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
-
-                <!-- Main Timeline Feed -->
-                <div class="md:col-span-2 space-y-6">
-                    <!-- Post Creation Form -->
-                    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm">
-                        <form onsubmit="createPost(event)" class="space-y-3">
-                            <textarea id="post-content" rows="3" required class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm" placeholder="日本語やビサヤ語でメッセージを投稿してみましょう！ (Share something in Japanese or Visayan...)"></textarea>
-                            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                                <span class="text-xs text-slate-400">
-                                    <i class="fa-solid fa-globe mr-1"></i> Public Feed
-                                </span>
-                                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm px-5 py-2 rounded-xl shadow transition">
-                                    <i class="fa-solid fa-paper-plane mr-1.5"></i>
-                                    <span data-i18n="btn_post">投稿する</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Posts List -->
-                    <div id="posts-container" class="space-y-4">
-                        <!-- Dynamic posts populated here -->
-                    </div>
-                </div>
-
             </div>
         </section>
 
-        <!-- SECTION 5: MEMBERS DIRECTORY -->
-        <section id="view-members" class="view-section hidden py-8">
-            <div class="max-w-4xl mx-auto px-4">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900" data-i18n="members_title">メンバー一覧 (Community Members)</h2>
-                </div>
-                <div id="members-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <!-- Dynamic Members Populated Here -->
-                </div>
+        <!-- SECTION 2: Profile Settings / Initial Registration -->
+        <section id="view-profile" class="view-section hidden">
+            <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center space-x-2">
+                    <i class="fa-solid fa-user-gear text-brand-600"></i>
+                    <span data-i18n="profile.title">プロフィール設定</span>
+                </h2>
+
+                <form id="profileForm" onsubmit="saveProfile(event)" class="space-y-6">
+                    <!-- Icon Upload Section -->
+                    <div class="flex flex-col items-center space-y-3">
+                        <div class="relative">
+                            <img id="profileAvatarPreview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar" class="w-28 h-28 rounded-full object-cover border-4 border-brand-100 shadow-md">
+                            <label for="avatarInput" class="absolute bottom-0 right-0 bg-brand-600 hover:bg-brand-700 text-white p-2.5 rounded-full cursor-pointer shadow-lg transition">
+                                <i class="fa-solid fa-camera text-sm"></i>
+                            </label>
+                            <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/jpg" class="hidden" onchange="handleImageUpload(event)">
+                        </div>
+                        <button type="button" onclick="document.getElementById('avatarInput').click()" class="text-xs font-semibold text-brand-600 hover:text-brand-700">
+                            <i class="fa-solid fa-image mr-1"></i><span data-i18n="profile.selectImage">画像を選択</span>
+                        </button>
+                    </div>
+
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.name">お名前 / Name</label>
+                        <input type="text" id="profileName" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800" placeholder="e.g. Taro Yamada / Maria">
+                    </div>
+
+                    <!-- Native Language (母国語) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.native">母国語 / Native Language</label>
+                        <select id="profileNative" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                            <option value="日本語">日本語 (Japanese)</option>
+                            <option value="ビサヤ語">ビサヤ語 (Visayan / Cebuano)</option>
+                            <option value="英語">英語 (English)</option>
+                        </select>
+                    </div>
+
+                    <!-- Learning Language (学びたい言語) -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.learning">学びたい言語 / Language to Learn</label>
+                        <select id="profileLearning" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
+                            <option value="ビサヤ語（Visayan / Cebuano）">ビサヤ語 (Visayan / Cebuano)</option>
+                            <option value="日本語">日本語 (Japanese)</option>
+                        </select>
+                    </div>
+
+                    <!-- Location -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.location">居住地 / Location</label>
+                        <input type="text" id="profileLocation" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500" placeholder="e.g. Cebu, Philippines / Tokyo, Japan">
+                    </div>
+
+                    <!-- Bio -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.bio">自己紹介 / Self Introduction</label>
+                        <textarea id="profileBio" rows="3" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500" placeholder="趣味や言語学習の目標などをご自由に書いてください。"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-lg shadow-md transition duration-150">
+                        <span data-i18n="profile.saveBtn">保存する</span>
+                    </button>
+                </form>
             </div>
         </section>
 
-        <!-- SECTION 6: VISAYAN - JAPANESE PHRASEBOOK -->
-        <section id="view-phrasebook" class="view-section hidden py-8">
-            <div class="max-w-4xl mx-auto px-4">
-                <div class="bg-gradient-to-r from-brand-600 to-indigo-600 rounded-2xl p-6 text-white mb-6 shadow-md">
-                    <h2 class="text-2xl font-bold mb-2">🌴 ビサヤ語（Cebuano）基本フレーズ</h2>
-                    <p class="text-sky-100 text-sm">日常会話でよく使われるビサヤ語と日本語の対訳集です。交流に役立てましょう！</p>
+        <!-- SECTION 3: Community Members (メンバー一覧) -->
+        <section id="view-members" class="view-section hidden">
+            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900" data-i18n="members.title">Community Members</h2>
+                    <p class="text-sm text-slate-500" data-i18n="members.subtitle">互いの言語を学び合える仲間を見つけましょう！</p>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="phrase-list">
-                    <!-- Dynamic phrases generated here -->
+            <div id="membersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamic Member Cards will be rendered here -->
+            </div>
+        </section>
+
+        <!-- SECTION 4: Feed / Community Posts -->
+        <section id="view-feed" class="view-section hidden max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
+                <h3 class="font-bold text-slate-800 mb-3" data-i18n="feed.postTitle">タイムラインに投稿する</h3>
+                <textarea id="feedPostInput" rows="3" class="w-full p-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm" placeholder="日々の学びや質問、フィリピンや日本に関するトピックをシェアしましょう..."></textarea>
+                <div class="mt-3 flex justify-end">
+                    <button onclick="submitPost()" class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold px-5 py-2 rounded-lg shadow transition">
+                        <i class="fa-solid fa-paper-plane mr-1"></i> <span data-i18n="feed.submit">投稿する</span>
+                    </button>
                 </div>
+            </div>
+
+            <!-- Feed Items Container -->
+            <div id="feedList" class="space-y-4">
+                <!-- Posts will be rendered here -->
+            </div>
+        </section>
+
+        <!-- SECTION 5: Phrases & Study -->
+        <section id="view-phrases" class="view-section hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-900" data-i18n="phrases.title">基本ビサヤ語・日本語フレーズ</h2>
+                <p class="text-sm text-slate-500" data-i18n="phrases.subtitle">よく使われる挨拶や日常会話フレーズ集</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="phraseCards">
+                <!-- Dynamic Phrases -->
             </div>
         </section>
 
     </main>
 
-    <!-- Modal: Supabase Configuration -->
-    <div id="supabase-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-slate-900 flex items-center">
-                    <i class="fa-solid fa-database text-emerald-600 mr-2"></i> Supabase 設定
-                </h3>
-                <button onclick="closeSupabaseModal()" class="text-slate-400 hover:text-slate-600 text-xl">×</button>
-            </div>
-            <p class="text-xs text-slate-600 mb-4">
-                ご自身のSupabase URLとAnon Keyを入力・変更できます。コード内にデフォルト値を書くことで全ユーザー自動接続にすることも可能です。
-            </p>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Supabase URL</label>
-                    <input type="text" id="supabase-url-input" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300" placeholder="https://your-project.supabase.co">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Supabase Anon Key</label>
-                    <input type="password" id="supabase-key-input" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6...">
-                </div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-2">
-                <button onclick="closeSupabaseModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">キャンセル</button>
-                <button onclick="saveSupabaseConfig()" class="px-4 py-2 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow">接続設定を保存</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Direct Messaging Chat -->
-    <div id="chat-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full h-[550px] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+    <!-- Direct Message Modal (Chat) -->
+    <div id="chatModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg h-[550px] flex flex-col overflow-hidden">
             <!-- Chat Header -->
-            <div class="p-4 bg-gradient-to-r from-brand-600 to-indigo-600 text-white flex items-center justify-between shrink-0">
+            <div class="p-4 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <img id="chat-target-avatar" src="" class="w-10 h-10 rounded-full object-cover border-2 border-white/50" alt="Avatar">
+                    <img id="chatPartnerAvatar" src="" class="w-10 h-10 rounded-full object-cover border border-slate-300">
                     <div>
-                        <h3 id="chat-target-name" class="font-bold text-base leading-tight">Name</h3>
-                        <p id="chat-target-langs" class="text-xs text-sky-100">Languages</p>
+                        <h4 id="chatPartnerName" class="font-bold text-slate-800 text-sm"></h4>
+                        <span id="chatPartnerLang" class="text-xs text-slate-500"></span>
                     </div>
                 </div>
-                <button onclick="closeChatModal()" class="text-white/80 hover:text-white text-2xl font-bold">&times;</button>
+                <button onclick="closeChat()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
             </div>
 
-            <!-- Chat Message List -->
-            <div id="chat-messages-container" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-50">
-                <!-- Messages populated dynamically -->
+            <!-- Chat Messages Area -->
+            <div id="chatMessages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-50">
+                <!-- Messages will appear here -->
             </div>
 
-            <!-- Chat Input Form -->
-            <form onsubmit="sendDirectMessage(event)" class="p-3 bg-white border-t border-slate-200 flex items-center space-x-2 shrink-0">
-                <input type="text" id="chat-input" required class="flex-grow px-4 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500" placeholder="メッセージを入力... (Type a message...)">
-                <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2.5 rounded-xl shadow transition shrink-0 flex items-center">
-                    <i class="fa-solid fa-paper-plane mr-1.5"></i> 送信
+            <!-- Chat Input Area -->
+            <div class="p-3 bg-white border-t border-slate-200 flex items-center space-x-2">
+                <input type="text" id="chatInput" placeholder="メッセージを入力..." class="flex-grow px-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                <button onclick="sendMessage()" class="bg-brand-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-brand-700 transition">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>
-            </form>
+            </div>
         </div>
     </div>
 
-    <!-- Toast Notification System -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-sm">
-        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
-        <span id="toast-message">Notification</span>
-    </div>
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 flex justify-around py-2 shadow-lg">
+        <button onclick="navigateTo('landing')" class="flex flex-col items-center text-slate-600 text-xs">
+            <i class="fa-solid fa-house text-base mb-0.5"></i>
+            <span data-i18n="nav.home">ホーム</span>
+        </button>
+        <button onclick="navigateTo('members')" class="flex flex-col items-center text-brand-600 font-semibold text-xs">
+            <i class="fa-solid fa-users text-base mb-0.5"></i>
+            <span data-i18n="nav.members">メンバー</span>
+        </button>
+        <button onclick="navigateTo('feed')" class="flex flex-col items-center text-slate-600 text-xs">
+            <i class="fa-solid fa-comments text-base mb-0.5"></i>
+            <span data-i18n="nav.feed">フィード</span>
+        </button>
+        <button onclick="navigateTo('phrases')" class="flex flex-col items-center text-slate-600 text-xs">
+            <i class="fa-solid fa-book-open text-base mb-0.5"></i>
+            <span data-i18n="nav.phrases">フレーズ</span>
+        </button>
+        <button onclick="navigateTo('profile')" class="flex flex-col items-center text-slate-600 text-xs">
+            <i class="fa-solid fa-user text-base mb-0.5"></i>
+            <span data-i18n="nav.profile">マイページ</span>
+        </button>
+    </nav>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-            <p>© LingoExchange - Japan & Philippines Visayan Language Exchange Platform.</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript Application Logic -->
+    <!-- JavaScript Core Application Logic -->
     <script>
-        let activeChatTarget = null;
-        let activeChatMessages = [];
-
-        // 【設定箇所】全デバイス自動接続用デフォルトSupabase情報
-        // ご自身のSupabaseのURLとAnon Keyを以下に入力してください
         // =========================================================================
-        const DEFAULT_SUPABASE_URL = "https://ccprpxmgwooofulhtxdp.supabase.co"; 
-        const DEFAULT_SUPABASE_KEY = "sb_publishable_iz0tW2GlWPxrcqnjDqG6AA_Mn_PBo7M"; 
+        // Supabase Automatic Configuration
+        // =========================================================================
+        const DEFAULT_SUPABASE_URL = "https://ccprpxmgwooofulhtxdp.supabase.co";
+        const DEFAULT_SUPABASE_KEY = "sb_publishable_iz0tW2GlWPxrcqnjDqG6AA_Mn_PBo7M";
         // =========================================================================
 
-        let currentLang = 'ja';
         let supabaseClient = null;
 
-        // Current user profile state
+        // Current User Profile State
         let currentUser = {
             id: 'user_' + Math.random().toString(36).substr(2, 9),
-            name: '',
-            nativeLang: '日本語',
-            learningLang: 'ビサヤ語（Visayan / Cebuano）',
-            location: '',
-            bio: '',
-            avatar: 'https://placehold.co/150x150/0284c7/ffffff?text=Icon'
+            name: 'ゲストユーザー',
+            native_lang: '日本語',
+            learning_lang: 'ビサヤ語（Visayan / Cebuano）',
+            location: '日本',
+            bio: 'こんにちは！ビサヤ語を勉強しています。よろしくお願いします！',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
         };
 
-        // Fallback Initial Members List
-        let mockMembers = [
-            {
-                id: 'm1',
-                name: 'Maria Santos',
-                avatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Maria',
-                nativeLang: 'ビサヤ語',
-                learningLang: '日本語',
-                location: 'Cebu City, Philippines',
-                bio: 'Hi! I want to practice Japanese conversation. I love Japanese anime and food!'
-            },
-            {
-                id: 'm2',
-                name: 'Kenji Tanaka',
-                avatar: 'https://placehold.co/100x100/0284c7/ffffff?text=Kenji',
-                nativeLang: '日本語',
-                learningLang: 'ビサヤ語（Visayan / Cebuano）',
-                location: 'Tokyo, Japan',
-                bio: 'フィリピンのカルチャーとビサヤ語に興味があります。日常会話を学びたいです！'
-            },
-            {
-                id: 'm3',
-                name: 'Grace Flores',
-                avatar: 'https://placehold.co/100x100/10b981/ffffff?text=Grace',
-                nativeLang: 'ビサヤ語',
-                learningLang: '日本語',
-                location: 'Davao, Philippines',
-                bio: 'Hello! I live in Mindanao. Excited to meet Japanese friends here.'
-            }
-        ];
+        // Active Chat Target State
+        let currentChatPartner = null;
 
-        let mockPosts = [
-            {
-                id: '1',
-                userName: 'Maria Santos',
-                userAvatar: 'https://placehold.co/100x100/ec4899/ffffff?text=Maria',
-                nativeLang: 'ビサヤ語',
-                learningLang: '日本語',
-                content: 'Maayong adlaw! (こんにちは!) 日本語を勉強しています。セブ島の料理や海について話しましょう！',
-                createdAt: '10分前'
-            },
-            {
-                id: '2',
-                userName: 'Taro Yamada',
-                userAvatar: 'https://placehold.co/100x100/0284c7/ffffff?text=Taro',
-                nativeLang: '日本語',
-                learningLang: 'ビサヤ語（Visayan / Cebuano）',
-                content: 'Daghang salamat!（ありがとうございます！）ビサヤ語の挨拶を練習中です。よろしくお願いします！',
-                createdAt: '1時間前'
-            }
-        ];
-
-        const translations = {
+        // Multilingual Dictionary UI Text
+        let currentLang = 'ja';
+        const i18nText = {
             ja: {
-                landing_body: `このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
-日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。
-フィリピンは、平均年齢が２４歳と若い国です、人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。
-自然も豊かで、フルーツやマグロなどの魚もたくさん日本に輸入されています。
-このアプリでお互いの国の言葉を勉強して、多くの人たちがお互いの国に関心を持ち、お互いの素晴らしい国を訪れることを願います。
-さあ、始めましょう。`,
-                landing_subtitle: "日本語を話す人と、ビサヤ語（セブアノ語）を話す人たちのためのオープンコミュニティ",
-                nav_register: "登録 / 開始",
-                card1_title: "言語の相互学習",
-                card1_desc: "日本語・ビサヤ語・英語を使った自然なコミュニケーション",
-                card2_title: "文化とフレンドシップ",
-                card2_desc: "お互いの国の伝統、文化、日常をシェアし合おう",
-                card3_title: "新しいつながり",
-                card3_desc: "日本とフィリピン（セブ・ミンダナオ等）を結ぶ架け橋に",
-                cta_start: "さあ、始めましょう（プロフィール登録）",
-                profile_heading: "プロフィール設定",
-                profile_icon_label: "プロフィールアイコン画像",
-                profile_icon_help: "PCやスマホの写真（JPEG, PNG等）を選択するだけでアイコンが自動的に切り替わります。",
-                btn_choose_image: "画像を選択",
-                lbl_name: "お名前 / ニックネーム *",
-                lbl_native: "母国語 (Native Language) *",
-                lbl_learning: "学びたい言語 (Learning) *",
-                lbl_location: "居住地域 / 出身地",
-                lbl_bio: "自己紹介 (Bio)",
-                btn_save_profile: "保存してタイムラインに進む",
-                btn_edit_profile: "編集",
-                nav_members: "メンバーを探す",
-                nav_phrases: "ビサヤ語フレーズ集",
-                btn_post: "投稿する",
-                members_title: "メンバー一覧 (Community Members)"
+                "nav.home": "ホーム",
+                "nav.members": "メンバーを探す",
+                "nav.feed": "フィード",
+                "nav.phrases": "単語・フレーズ",
+                "nav.profile": "マイページ",
+                "landing.title": "このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。",
+                "landing.p1": "日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。",
+                "landing.p2": "フィリピンは、平均年齢が２４歳と若い国です。人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。",
+                "landing.p3": "自然も豊かで、フルーツやマグロなどの魚もたくさん日本に輸入されています。",
+                "landing.p4": "このアプリでお互いの国の言葉を勉強して、多くの人たちがお互いの国に関心を持ち、お互いの素晴らしい国を訪れることを願います。",
+                "landing.startBtn": "さあ、始めましょう！",
+                "profile.title": "プロフィール設定",
+                "profile.selectImage": "画像を選択",
+                "profile.name": "お名前 / Name",
+                "profile.native": "母国語 / Native Language",
+                "profile.learning": "学びたい言語 / Language to Learn",
+                "profile.location": "居住地 / Location",
+                "profile.bio": "自己紹介 / Self Introduction",
+                "profile.saveBtn": "保存する",
+                "members.title": "Community Members",
+                "members.subtitle": "互いの言語を学び合える仲間を見つけましょう！",
+                "feed.postTitle": "タイムラインに投稿する",
+                "feed.submit": "投稿する",
+                "phrases.title": "基本ビサヤ語・日本語フレーズ",
+                "phrases.subtitle": "よく使われる挨拶や日常会話フレーズ集"
             },
             en: {
-                landing_body: `This website was created to deepen interaction between Japanese speakers and Visayan (Cebuano) speakers.
-Japan is a country that values tradition and culture. However, with its youth population declining every year, the cooperation of people from the Philippines is essential. By learning Japanese, we hope many people in the Philippines will become interested in Japan and thrive here.
-The Philippines is a young nation with an average age of 24. Its people are known for their bright, friendly nature, high sense of hospitality, and deep love for family as their top priority.
-It is also rich in nature, exporting abundant fruits and fish such as tuna to Japan.
-Through this app, we hope users learn each other's languages, take a deep interest in both countries, and visit each other's wonderful lands.
-Now, let's get started.`,
-                landing_subtitle: "An open exchange community for Japanese and Visayan (Cebuano) language learners.",
-                nav_register: "Start / Profile",
-                card1_title: "Language Exchange",
-                card1_desc: "Natural communication in Japanese, Visayan & English",
-                card2_title: "Culture & Friendship",
-                card2_desc: "Share traditions, daily life, and warm hospitality",
-                card3_title: "New Connections",
-                card3_desc: "Bridge Japan and the Philippines (Cebu, Davao, etc.)",
-                cta_start: "Let's Get Started (Set Profile)",
-                profile_heading: "Profile Setup",
-                profile_icon_label: "Profile Icon Image",
-                profile_icon_help: "Select any photo (JPEG, PNG, etc.) from your device to update your icon instantly.",
-                btn_choose_image: "Choose Image",
-                lbl_name: "Name / Nickname *",
-                lbl_native: "Native Language *",
-                lbl_learning: "Learning Language *",
-                lbl_location: "Location / Origin",
-                lbl_bio: "Bio / Self-Introduction",
-                btn_save_profile: "Save & Continue to Timeline",
-                btn_edit_profile: "Edit Profile",
-                nav_members: "Find Members",
-                nav_phrases: "Visayan Phrasebook",
-                btn_post: "Post",
-                members_title: "Community Members"
+                "nav.home": "Home",
+                "nav.members": "Find Members",
+                "nav.feed": "Feed",
+                "nav.phrases": "Phrases",
+                "nav.profile": "My Profile",
+                "landing.title": "This site was created to deepen interaction between Japanese speakers and Visayan speakers.",
+                "landing.p1": "Japan values tradition and culture. However, the youth population is decreasing, and the cooperation of Filipino people is vital. By learning Japanese, we hope many Filipinos will take interest in Japan and thrive in Japan.",
+                "landing.p2": "The Philippines is a young nation with an average age of 24. People are bright, friendly, hospitable, and full of deep family love.",
+                "landing.p3": "Rich in nature, fruits and fish like tuna are exported to Japan in large quantities.",
+                "landing.p4": "We hope everyone learns each other's language through this app, gains interest in each other's countries, and visits these wonderful places.",
+                "landing.startBtn": "Let's Get Started!",
+                "profile.title": "Profile Settings",
+                "profile.selectImage": "Select Image",
+                "profile.name": "Name",
+                "profile.native": "Native Language",
+                "profile.learning": "Language to Learn",
+                "profile.location": "Location",
+                "profile.bio": "Self Introduction",
+                "profile.saveBtn": "Save Profile",
+                "members.title": "Community Members",
+                "members.subtitle": "Find learning partners to exchange languages!",
+                "feed.postTitle": "Post to Feed",
+                "feed.submit": "Post",
+                "phrases.title": "Basic Visayan & Japanese Phrases",
+                "phrases.subtitle": "Common greetings and daily conversational phrases"
             }
         };
 
-        const visayanPhrases = [
-            { vis: "Maayong adlaw!", jp: "こんにちは！", en: "Good day / Hello!" },
-            { vis: "Maayong buntag!", jp: "おはようございます！", en: "Good morning!" },
-            { vis: "Maayong gabi-i!", jp: "こんばんは！", en: "Good evening!" },
-            { vis: "Daghang salamat!", jp: "ありがとうございます！", en: "Thank you very much!" },
-            { vis: "Walay sukad / Walay sapayan", jp: "どういたしまして", en: "You're welcome" },
-            { vis: "Unsay imong ngalan?", jp: "お名前は何ですか？", en: "What is your name?" },
-            { vis: "Ang akong ngalan kay...", jp: "私の名前は...です", en: "My name is..." },
-            { vis: "Gihigugma tika", jp: "愛しています", en: "I love you" },
-            { vis: "Lami kaayo!", jp: "とても美味しい！", en: "Very delicious!" },
-            { vis: "Pila kini?", jp: "これはいくらですか？", en: "How much is this?" }
+        // Mock Members Initial Data
+        let mockMembers = [
+            { id: 'm1', name: 'Ana Santos', native_lang: 'ビサヤ語', learning_lang: '日本語', location: 'Cebu City', bio: 'Maayong adlaw! I am learning Japanese and love anime.', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80' },
+            { id: 'm2', name: 'Kenji Sato', native_lang: '日本語', learning_lang: 'ビサヤ語（Visayan / Cebuano）', location: 'Tokyo, Japan', bio: 'フィリピンのセブ島が大好きです。ビサヤ語を話せるようになりたいです！', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80' },
+            { id: 'm3', name: 'Grace Flores', native_lang: 'ビサヤ語', learning_lang: '日本語', location: 'Davao, Philippines', bio: 'Kumusta! Want to practice Japanese and share Visayan culture.', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80' }
         ];
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadStoredUser();
-            initSupabaseFromStorage();
-            renderPhrases();
-            renderMembers();
-            renderPosts();
-        });
+        // Mock Feed Posts Data
+        let mockPosts = [
+            { id: 'p1', user_name: 'Ana Santos', user_avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80', native_lang: 'ビサヤ語', content: 'Maayong buntag! Today I learned "こんにちは" (Konnichiwa). Is it used all day?', created_at: '10分前' },
+            { id: 'p2', user_name: 'Kenji Sato', user_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80', native_lang: '日本語', content: 'ビサヤ語で「ありがとう」は "Salamat" ですね！覚えやすいです。', created_at: '1時間前' }
+        ];
 
-        function setUiLanguage(lang) {
-            currentLang = lang;
-            const btnJa = document.getElementById('btn-lang-ja');
-            const btnEn = document.getElementById('btn-lang-en');
+        // Mock Phrases
+        const defaultPhrases = [
+            { visayan: 'Maayong buntag', japanese: 'おはようございます', english: 'Good morning' },
+            { visayan: 'Maayong hapon', japanese: 'こんにちは（午後）', english: 'Good afternoon' },
+            { visayan: 'Maayong gabi-i', japanese: 'こんばんは', english: 'Good evening' },
+            { visayan: 'Salamat kaayo', japanese: '本当におおきに / ありがとう', english: 'Thank you very much' },
+            { visayan: 'Kumusta ka?', japanese: 'お元気ですか？', english: 'How are you?' },
+            { visayan: 'Maayo man', japanese: '元気です', english: 'I am fine' },
+            { visayan: 'Unsay imong ngalan?', japanese: 'お名前は何ですか？', english: 'What is your name?' },
+            { visayan: 'Pila kini?', japanese: 'これはいくらですか？', english: 'How much is this?' }
+        ];
 
-            if (lang === 'ja') {
-                btnJa.className = "px-2 py-1 rounded-md transition-all font-semibold bg-white text-slate-800 shadow-sm";
-                btnEn.className = "px-2 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800";
-            } else {
-                btnEn.className = "px-2 py-1 rounded-md transition-all font-semibold bg-white text-slate-800 shadow-sm";
-                btnJa.className = "px-2 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800";
-            }
-
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang] && translations[lang][key]) {
-                    el.innerText = translations[lang][key];
+        // Initialize Supabase Connection
+        function initSupabaseClient() {
+            try {
+                if (window.supabase) {
+                    supabaseClient = window.supabase.createClient(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
+                    console.log("Supabase Client initialized automatically.");
+                    setupRealtimeSubscriptions();
                 }
-            });
-
-            document.getElementById('landing-text-body').innerText = translations[lang].landing_body;
+            } catch (err) {
+                console.warn("Supabase Init Warning:", err);
+            }
         }
 
+        // View Navigation Handler
         function navigateTo(viewId) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
             const target = document.getElementById('view-' + viewId);
@@ -619,445 +432,338 @@ Now, let's get started.`,
                 target.classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+
+            // Update mobile bottom bar active state
+            document.querySelectorAll('nav.md\\:hidden button').forEach(btn => {
+                btn.classList.remove('text-brand-600', 'font-semibold');
+                btn.classList.add('text-slate-600');
+            });
+            const activeNavBtn = document.querySelector(`nav.md\\:hidden button[onclick="navigateTo('${viewId}')"]`);
+            if (activeNavBtn) {
+                activeNavBtn.classList.remove('text-slate-600');
+                activeNavBtn.classList.add('text-brand-600', 'font-semibold');
+            }
         }
 
+        // Toggle Language (Japanese / English)
+        function toggleUiLanguage() {
+            currentLang = currentLang === 'ja' ? 'en' : 'ja';
+            document.getElementById('langToggleText').textContent = currentLang === 'ja' ? 'English' : '日本語';
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18nText[currentLang] && i18nText[currentLang][key]) {
+                    el.textContent = i18nText[currentLang][key];
+                }
+            });
+        }
+
+        // Profile Image Upload Handler
         function handleImageUpload(event) {
             const file = event.target.files[0];
-            if (!file) return;
-
-            if (!file.type.match('image.*')) {
-                showToast('画像ファイル（JPEG, PNG等）を選択してください。', 'error');
-                return;
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageDataUrl = e.target.result;
+                    document.getElementById('profileAvatarPreview').src = imageDataUrl;
+                    currentUser.avatar = imageDataUrl;
+                };
+                reader.readAsDataURL(file);
             }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const dataUrl = e.target.result;
-                currentUser.avatar = dataUrl;
-                document.getElementById('profile-avatar-preview').src = dataUrl;
-                document.getElementById('header-avatar').src = dataUrl;
-                document.getElementById('side-avatar').src = dataUrl;
-                showToast('プロフィール画像が更新されました！');
-            };
-            reader.readAsDataURL(file);
         }
 
-        async function saveProfile(e) {
-            e.preventDefault();
-            currentUser.name = document.getElementById('user-name').value.trim();
-            currentUser.nativeLang = document.getElementById('user-native-lang').value;
-            currentUser.learningLang = document.getElementById('user-learning-lang').value;
-            currentUser.location = document.getElementById('user-location').value.trim();
-            currentUser.bio = document.getElementById('user-bio').value.trim();
+        // Save User Profile Logic
+        async function saveProfile(event) {
+            event.preventDefault();
+            currentUser.name = document.getElementById('profileName').value.trim() || currentUser.name;
+            currentUser.native_lang = document.getElementById('profileNative').value;
+            currentUser.learning_lang = document.getElementById('profileLearning').value;
+            currentUser.location = document.getElementById('profileLocation').value.trim() || 'N/A';
+            currentUser.bio = document.getElementById('profileBio').value.trim() || '';
 
+            document.getElementById('navAvatar').src = currentUser.avatar;
             localStorage.setItem('lingo_user', JSON.stringify(currentUser));
 
+            // Sync with Supabase DB if available
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('profiles').upsert([currentUser]);
+                } catch (e) {
+                    console.error("Supabase Profile Sync Error:", e);
+                }
+            }
+
+            // Immediately reflect in local members list
             const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
-            const memberObj = {
-                id: currentUser.id,
-                name: currentUser.name,
-                avatar: currentUser.avatar,
-                nativeLang: currentUser.nativeLang,
-                learningLang: currentUser.learningLang,
-                location: currentUser.location || '未設定',
-                bio: currentUser.bio || 'よろしくお願いします！'
-            };
-
             if (existingIdx >= 0) {
-                mockMembers[existingIdx] = memberObj;
+                mockMembers[existingIdx] = { ...currentUser };
             } else {
-                mockMembers.unshift(memberObj);
+                mockMembers.unshift({ ...currentUser });
             }
 
-            if (supabaseClient) {
-                try {
-                    const dbPayload = {
-                        id: currentUser.id,
-                        name: currentUser.name,
-                        native_lang: currentUser.nativeLang,
-                        learning_lang: currentUser.learningLang,
-                        location: currentUser.location,
-                        bio: currentUser.bio,
-                        avatar: currentUser.avatar
-                    };
-                    const { error } = await supabaseClient.from('profiles').upsert(dbPayload);
-                    if (error) throw error;
-                    showToast('プロフィールを保存し、メンバー一覧へ反映しました！');
-                    await fetchMembersFromSupabase();
-                } catch (err) {
-                    console.error("Supabase profile save error:", err);
-                    showToast('プロフィールをローカルに保存しました。', 'info');
-                }
-            } else {
-                showToast('プロフィールを保存し、メンバー一覧に追加しました！');
-            }
-
-            updateUserUI();
             renderMembers();
-            navigateTo('feed');
+            alert(currentLang === 'ja' ? 'プロフィールを更新・同期しました！' : 'Profile updated and synchronized!');
+            navigateTo('members');
         }
 
+        // Load Stored Profile
         function loadStoredUser() {
-            const saved = localStorage.getItem('lingo_user');
-            if (saved) {
+            const stored = localStorage.getItem('lingo_user');
+            if (stored) {
                 try {
-                    currentUser = JSON.parse(saved);
-                    document.getElementById('user-name').value = currentUser.name || '';
-                    document.getElementById('user-native-lang').value = currentUser.nativeLang || '日本語';
-                    document.getElementById('user-learning-lang').value = currentUser.learningLang || 'ビサヤ語（Visayan / Cebuano）';
-                    document.getElementById('user-location').value = currentUser.location || '';
-                    document.getElementById('user-bio').value = currentUser.bio || '';
+                    currentUser = JSON.parse(stored);
+                    document.getElementById('profileName').value = currentUser.name || '';
+                    document.getElementById('profileNative').value = currentUser.native_lang || '日本語';
+                    document.getElementById('profileLearning').value = currentUser.learning_lang || 'ビサヤ語（Visayan / Cebuano）';
+                    document.getElementById('profileLocation').value = currentUser.location || '';
+                    document.getElementById('profileBio').value = currentUser.bio || '';
                     if (currentUser.avatar) {
-                        document.getElementById('profile-avatar-preview').src = currentUser.avatar;
+                        document.getElementById('profileAvatarPreview').src = currentUser.avatar;
+                        document.getElementById('navAvatar').src = currentUser.avatar;
                     }
-                    
-                    if (currentUser.name) {
-                        const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
-                        const memberObj = {
-                            id: currentUser.id,
-                            name: currentUser.name,
-                            avatar: currentUser.avatar,
-                            nativeLang: currentUser.nativeLang,
-                            learningLang: currentUser.learningLang,
-                            location: currentUser.location || '未設定',
-                            bio: currentUser.bio || 'よろしくお願いします！'
-                        };
-                        if (existingIdx >= 0) {
-                            mockMembers[existingIdx] = memberObj;
-                        } else {
-                            mockMembers.unshift(memberObj);
-                        }
-                    }
-
-                    updateUserUI();
-                } catch(e) {
-                    console.error("Error loading saved user:", e);
-                }
+                } catch(e) {}
             }
         }
 
-        function updateUserUI() {
-            if (currentUser.name) {
-                document.getElementById('nav-guest-area').classList.add('hidden');
-                document.getElementById('nav-user-area').classList.remove('hidden');
-                document.getElementById('side-name').innerText = currentUser.name;
-                document.getElementById('side-langs').innerText = `母国語: ${currentUser.nativeLang} | 学びたい言語: ${currentUser.learningLang}`;
-                document.getElementById('header-avatar').src = currentUser.avatar;
-                document.getElementById('side-avatar').src = currentUser.avatar;
-            }
-        }
-
-        async function createPost(e) {
-            e.preventDefault();
-            const content = document.getElementById('post-content').value.trim();
-            if (!content) return;
-
-            if (!currentUser.name) {
-                showToast('投稿するにはプロフィールを設定してください', 'error');
-                navigateTo('profile');
-                return;
-            }
-
-            const newPost = {
-                id: Date.now().toString(),
-                user_name: currentUser.name,
-                user_avatar: currentUser.avatar,
-                native_lang: currentUser.nativeLang,
-                learning_lang: currentUser.learningLang,
-                content: content,
-                created_at: new Date().toISOString()
-            };
-
+        // Render Community Members Cards
+        async function renderMembers() {
             if (supabaseClient) {
                 try {
-                    const { error } = await supabaseClient.from('posts').insert(newPost);
-                    if (error) throw error;
-                    showToast('Supabaseへ投稿しました！');
-                    await fetchPostsFromSupabase();
-                } catch (err) {
-                    console.error("Post save error:", err);
-                    mockPosts.unshift({
-                        id: newPost.id,
-                        userName: newPost.user_name,
-                        userAvatar: newPost.user_avatar,
-                        nativeLang: newPost.native_lang,
-                        learningLang: newPost.learning_lang,
-                        content: newPost.content,
-                        createdAt: 'たった今'
-                    });
-                    renderPosts();
-                }
-            } else {
-                mockPosts.unshift({
-                    id: newPost.id,
-                    userName: newPost.user_name,
-                    userAvatar: newPost.user_avatar,
-                    nativeLang: newPost.native_lang,
-                    learningLang: newPost.learning_lang,
-                    content: newPost.content,
-                    createdAt: 'たった今'
-                });
-                renderPosts();
-                showToast('タイムラインに投稿しました！');
+                    const { data, error } = await supabaseClient.from('profiles').select('*');
+                    if (!error && data && data.length > 0) {
+                        mockMembers = data;
+                    }
+                } catch(e) {}
             }
 
-            document.getElementById('post-content').value = '';
-        }
+            const container = document.getElementById('membersList');
+            container.innerHTML = '';
 
-        async function fetchPostsFromSupabase() {
-            if (!supabaseClient) return;
-            try {
-                const { data, error } = await supabaseClient.from('posts').select('*').order('created_at', { ascending: false });
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    mockPosts = data.map(p => ({
-                        id: p.id,
-                        userName: p.user_name,
-                        userAvatar: p.user_avatar,
-                        nativeLang: p.native_lang,
-                        learningLang: p.learning_lang,
-                        content: p.content,
-                        createdAt: new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    }));
-                    renderPosts();
-                }
-            } catch (err) {
-                console.error("Error fetching posts:", err);
-            }
-        }
-
-        async function fetchMembersFromSupabase() {
-            if (!supabaseClient) return;
-            try {
-                const { data, error } = await supabaseClient.from('profiles').select('*');
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    const dbMembers = data.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        avatar: p.avatar || 'https://placehold.co/100x100/0284c7/ffffff?text=User',
-                        nativeLang: p.native_lang,
-                        learningLang: p.learning_lang,
-                        location: p.location || '未設定',
-                        bio: p.bio || ''
-                    }));
-                    
-                    dbMembers.forEach(m => {
-                        const idx = mockMembers.findIndex(x => x.id === m.id);
-                        if (idx >= 0) {
-                            mockMembers[idx] = m;
-                        } else {
-                            mockMembers.unshift(m);
-                        }
-                    });
-                    renderMembers();
-                }
-            } catch (err) {
-                console.error("Error fetching profiles:", err);
-            }
-        }
-
-        function renderMembers() {
-            const container = document.getElementById('members-grid');
-            if (!container) return;
-            container.innerHTML = mockMembers.map(m => `
-                <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col justify-between hover:border-brand-300 transition">
+            mockMembers.forEach(member => {
+                const isSelf = member.id === currentUser.id;
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:shadow-md transition";
+                card.innerHTML = `
                     <div>
-                        <div class="flex items-start space-x-3 mb-3">
-                            <img src="${escapeHtml(m.avatar)}" class="w-12 h-12 rounded-full object-cover border border-slate-200" alt="${escapeHtml(m.name)}">
-                            <div class="flex-1 min-w-0">
-                                <h4 class="font-bold text-slate-900 text-sm truncate flex items-center">
-                                    ${escapeHtml(m.name)}
-                                    ${m.id === currentUser.id ? '<span class="ml-1.5 text-[10px] bg-brand-100 text-brand-700 font-semibold px-1.5 py-0.5 rounded">あなた</span>' : ''}
-                                </h4>
-                                <p class="text-xs text-slate-500 truncate"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(m.location)}</p>
+                        <div class="flex items-start space-x-4 mb-3">
+                            <img src="${member.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}" class="w-14 h-14 rounded-full object-cover border border-slate-200">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg flex items-center space-x-1">
+                                    <span>${escapeHtml(member.name)}</span>
+                                    ${isSelf ? '<span class="text-xs bg-brand-100 text-brand-700 font-semibold px-2 py-0.5 rounded-full ml-1">あなた</span>' : ''}
+                                </h3>
+                                <p class="text-xs text-slate-500"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(member.location || 'Unknown')}</p>
                             </div>
                         </div>
-                        <div class="space-y-1 mb-3 text-xs">
-                            <div class="flex items-center justify-between text-slate-600 bg-slate-50 p-1.5 rounded-lg">
-                                <span>母国語:</span>
-                                <span class="font-semibold text-slate-800">${escapeHtml(m.nativeLang)}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-slate-600 bg-slate-50 p-1.5 rounded-lg">
-                                <span>学びたい:</span>
-                                <span class="font-semibold text-brand-600">${escapeHtml(m.learningLang)}</span>
-                            </div>
+                        <div class="space-y-1 text-xs mb-3">
+                            <p class="text-slate-600"><span class="font-semibold text-slate-700">母国語:</span> ${escapeHtml(member.native_lang)}</p>
+                            <p class="text-slate-600"><span class="font-semibold text-slate-700">学びたい言語:</span> ${escapeHtml(member.learning_lang)}</p>
                         </div>
-                        <p class="text-xs text-slate-600 line-clamp-2 italic mb-3">"${escapeHtml(m.bio)}"</p>
+                        <p class="text-slate-600 text-xs italic bg-slate-50 p-2.5 rounded-lg border border-slate-100 mb-4 line-clamp-3">
+                            "${escapeHtml(member.bio || 'Hello!')}"
+                        </p>
                     </div>
-
-                    <!-- Contact / Message Button -->
-                    ${m.id !== currentUser.id ? `
-                        <button onclick="openChatWith('${escapeHtml(m.id)}')" class="w-full mt-2 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-medium text-xs py-2 px-3 rounded-xl shadow-sm transition flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-comments"></i>
+                    ${!isSelf ? `
+                        <button onclick="openChat('${member.id}', '${escapeHtml(member.name)}', '${member.avatar || ''}', '${escapeHtml(member.native_lang)}')" class="w-full bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 font-semibold text-xs py-2.5 rounded-lg flex items-center justify-center space-x-1.5 transition">
+                            <i class="fa-solid fa-paper-plane"></i>
                             <span>メッセージを送る</span>
                         </button>
                     ` : `
-                        <button disabled class="w-full mt-2 bg-slate-100 text-slate-400 font-medium text-xs py-2 px-3 rounded-xl cursor-not-allowed">
-                            マイプロフィール
+                        <button onclick="navigateTo('profile')" class="w-full bg-slate-100 text-slate-600 font-semibold text-xs py-2.5 rounded-lg text-center hover:bg-slate-200">
+                            編集する
                         </button>
                     `}
-                </div>
-            `).join('');
+                `;
+                container.appendChild(card);
+            });
         }
 
-        // --- DIRECT MESSAGING / CHAT FUNCTIONS ---
-        async function openChatWith(memberId) {
-            if (!currentUser.name) {
-                showToast('メッセージを送るには先にプロフィールを設定してください', 'error');
-                navigateTo('profile');
-                return;
-            }
-
-            const target = mockMembers.find(m => m.id === memberId);
-            if (!target) return;
-
-            activeChatTarget = target;
-            document.getElementById('chat-target-name').innerText = target.name;
-            document.getElementById('chat-target-avatar').src = target.avatar;
-            document.getElementById('chat-target-langs').innerText = `${target.nativeLang} ➔ ${target.learningLang}`;
-            document.getElementById('chat-modal').classList.remove('hidden');
-
-            await fetchMessages(target.id);
-        }
-
-        function closeChatModal() {
-            document.getElementById('chat-modal').classList.add('hidden');
-            activeChatTarget = null;
-        }
-
-        async function fetchMessages(targetId) {
+        // Render Posts Feed
+        async function renderPosts() {
             if (supabaseClient) {
                 try {
-                    const { data, error } = await supabaseClient
-                        .from('messages')
-                        .select('*')
-                        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`)
-                        .order('created_at', { ascending: true });
-
-                    if (error) throw error;
-                    activeChatMessages = data || [];
-                } catch (err) {
-                    console.error("Error fetching messages:", err);
-                }
-            }
-            renderChatMessages();
-        }
-
-        function renderChatMessages() {
-            const container = document.getElementById('chat-messages-container');
-            if (!container) return;
-
-            if (activeChatMessages.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-slate-400 text-xs">
-                        <i class="fa-regular fa-paper-plane text-3xl mb-2 text-slate-300"></i>
-                        <p>${escapeHtml(activeChatTarget?.name)} さんに最初のメッセージを送ってみましょう！</p>
-                    </div>
-                `;
-                return;
+                    const { data, error } = await supabaseClient.from('posts').select('*').order('created_at', { ascending: false });
+                    if (!error && data && data.length > 0) {
+                        mockPosts = data;
+                    }
+                } catch(e) {}
             }
 
-            container.innerHTML = activeChatMessages.map(msg => {
-                const isMe = msg.sender_id === currentUser.id;
-                return `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
-                        <div class="max-w-[80%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm shadow-sm ${
-                            isMe 
-                            ? 'bg-brand-600 text-white rounded-br-none' 
-                            : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
-                        }">
-                            ${escapeHtml(msg.content)}
+            const container = document.getElementById('feedList');
+            container.innerHTML = '';
+
+            mockPosts.forEach(post => {
+                const item = document.createElement('div');
+                item.className = "bg-white rounded-xl shadow-sm border border-slate-200 p-4";
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3 mb-2">
+                        <img src="${post.user_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}" class="w-10 h-10 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(post.user_name)}</h4>
+                            <span class="text-xs text-slate-400">${post.created_at || 'Just now'}</span>
                         </div>
-                        <span class="text-[10px] text-slate-400 mt-1 px-1">
-                            ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
                     </div>
+                    <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(post.content)}</p>
                 `;
-            }).join('');
-
-            container.scrollTop = container.scrollHeight;
+                container.appendChild(item);
+            });
         }
 
-        async function sendDirectMessage(e) {
-            e.preventDefault();
-            const input = document.getElementById('chat-input');
+        // Post Submission
+        async function submitPost() {
+            const input = document.getElementById('feedPostInput');
             const content = input.value.trim();
-            if (!content || !activeChatTarget) return;
+            if (!content) return;
 
-            const msgObj = {
-                id: Date.now().toString(),
-                sender_id: currentUser.id,
-                sender_name: currentUser.name,
-                receiver_id: activeChatTarget.id,
+            const newPost = {
+                id: 'p_' + Date.now(),
+                user_name: currentUser.name,
+                user_avatar: currentUser.avatar,
+                native_lang: currentUser.native_lang,
+                learning_lang: currentUser.learning_lang,
                 content: content,
-                created_at: new Date().toISOString()
+                created_at: 'たった今'
             };
 
-            activeChatMessages.push(msgObj);
-            renderChatMessages();
+            mockPosts.unshift(newPost);
             input.value = '';
 
             if (supabaseClient) {
                 try {
-                    const { error } = await supabaseClient.from('messages').insert(msgObj);
-                    if (error) throw error;
-                } catch (err) {
-                    console.error("Message send error:", err);
-                }
+                    await supabaseClient.from('posts').insert([newPost]);
+                } catch(e) {}
             }
+
+            renderPosts();
         }
 
-        function initSupabaseFromStorage() {
-            // Priority: LocalStorage -> Default global variables
-            const url = localStorage.getItem('supabase_url') || DEFAULT_SUPABASE_URL;
-            const key = localStorage.getItem('supabase_key') || DEFAULT_SUPABASE_KEY;
+        // Render Phrases
+        function renderPhrases() {
+            const container = document.getElementById('phraseCards');
+            container.innerHTML = '';
 
-            if (url && key && window.supabase) {
+            defaultPhrases.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:border-brand-300 transition";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-blue-50 text-blue-700 font-bold text-xs px-2.5 py-1 rounded-md">ビサヤ語</span>
+                        <span class="text-xs text-slate-400">${escapeHtml(p.english)}</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">${escapeHtml(p.visayan)}</h3>
+                    <p class="text-sm font-medium text-brand-700"><i class="fa-solid fa-language mr-1"></i>${escapeHtml(p.japanese)}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Direct Messaging (Chat) Logic
+        function openChat(partnerId, partnerName, partnerAvatar, partnerLang) {
+            currentChatPartner = { id: partnerId, name: partnerName, avatar: partnerAvatar, lang: partnerLang };
+            document.getElementById('chatPartnerName').textContent = partnerName;
+            document.getElementById('chatPartnerAvatar').src = partnerAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80';
+            document.getElementById('chatPartnerLang').textContent = partnerLang ? `Native: ${partnerLang}` : '';
+            document.getElementById('chatModal').classList.remove('hidden');
+            loadMessages();
+        }
+
+        function closeChat() {
+            document.getElementById('chatModal').classList.add('hidden');
+            currentChatPartner = null;
+        }
+
+        async function loadMessages() {
+            const container = document.getElementById('chatMessages');
+            container.innerHTML = '';
+
+            if (supabaseClient && currentChatPartner) {
                 try {
-                    supabaseClient = window.supabase.createClient(url, key);
-                    document.getElementById('supabase-status-text').innerText = 'Connected';
-                    // Subscribe to real-time chat messages
-                    supabaseClient
-                        .channel('public:messages')
-                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                            if (activeChatTarget && (payload.new.sender_id === activeChatTarget.id || payload.new.receiver_id === activeChatTarget.id)) {
-                                activeChatMessages.push(payload.new);
-                                renderChatMessages();
-                            }
-                        })
-                        .subscribe();
+                    const { data } = await supabaseClient.from('messages')
+                        .select('*')
+                        .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${currentChatPartner.id}),and(sender_id.eq.${currentChatPartner.id},receiver_id.eq.${currentUser.id})`)
+                        .order('created_at', { ascending: true });
+                    
+                    if (data) {
+                        data.forEach(msg => {
+                            appendMessageUI(msg.sender_id === currentUser.id, msg.content);
+                        });
+                        return;
+                    }
+                } catch(e) {}
+            }
 
-                } catch(e) {
-                    console.error("Supabase init error:", e);
-                }
+            // Welcome Message Default
+            appendMessageUI(false, `Kumusta! ${currentUser.name}さん、メッセージをありがとうございます！`);
+        }
+
+        function appendMessageUI(isMe, text) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `flex ${isMe ? 'justify-end' : 'justify-start'}`;
+            div.innerHTML = `
+                <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${isMe ? 'bg-brand-600 text-white chat-bubble-sender' : 'bg-white text-slate-800 border border-slate-200 chat-bubble-receiver'} shadow-sm">
+                    ${escapeHtml(text)}
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !currentChatPartner) return;
+
+            appendMessageUI(true, text);
+            input.value = '';
+
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('messages').insert([{
+                        id: 'm_' + Date.now(),
+                        sender_id: currentUser.id,
+                        sender_name: currentUser.name,
+                        receiver_id: currentChatPartner.id,
+                        content: text
+                    }]);
+                } catch(e) {}
             }
         }
 
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
+        // Setup Realtime Syncing via Supabase
+        function setupRealtimeSubscriptions() {
+            if (!supabaseClient) return;
+            try {
+                supabaseClient
+                    .channel('public:profiles')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+                        renderMembers();
+                    })
+                    .subscribe();
 
-            toastMsg.innerText = msg;
-            if (type === 'error') {
-                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
-            } else if (type === 'info') {
-                toastIcon.className = "fa-solid fa-circle-info text-sky-400";
-            } else {
-                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+                supabaseClient
+                    .channel('public:posts')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, () => {
+                        renderPosts();
+                    })
+                    .subscribe();
+            } catch(e) {}
         }
 
+        // Utilities
         function escapeHtml(str) {
-            if(!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStoredUser();
+            initSupabaseClient();
+            renderPhrases();
+            renderMembers();
+            renderPosts();
+        });
     </script>
 </body>
 </html>
