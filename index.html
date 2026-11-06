@@ -265,7 +265,7 @@
             </div>
 
             <div class="p-3 bg-white border-t border-slate-200 flex items-center space-x-2">
-                <input type="text" id="chatInput" placeholder="メッセージを入力..." class="flex-grow px-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                <input type="text" id="chatInput" placeholder="メッセージを入力..." class="flex-grow px-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm" onkeypress="if(event.key==='Enter') sendMessage()">
                 <button onclick="sendMessage()" class="bg-brand-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-brand-700 transition">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                 </button>
@@ -590,12 +590,22 @@
             mockPosts.forEach(post => {
                 const item = document.createElement('div');
                 item.className = "bg-white rounded-xl shadow-sm border border-slate-200 p-4";
+
+                // Format Time Display
+                let timeStr = post.created_at || 'たった今';
+                if (typeof timeStr === 'string' && timeStr.includes('T')) {
+                    try {
+                        const d = new Date(timeStr);
+                        timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    } catch(e) {}
+                }
+
                 item.innerHTML = `
                     <div class="flex items-center space-x-3 mb-2">
                         <img src="${post.user_avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'}" class="w-10 h-10 rounded-full object-cover">
                         <div>
                             <h4 class="font-bold text-slate-800 text-sm">${escapeHtml(post.user_name)}</h4>
-                            <span class="text-xs text-slate-400">${post.created_at || 'Just now'}</span>
+                            <span class="text-xs text-slate-400">${escapeHtml(timeStr)}</span>
                         </div>
                     </div>
                     <p class="text-sm text-slate-700 leading-relaxed">${escapeHtml(post.content)}</p>
@@ -604,7 +614,7 @@
             });
         }
 
-        // Post Submission
+        // Immediate Post Submission Logic
         async function submitPost() {
             const input = document.getElementById('feedPostInput');
             const content = input.value.trim();
@@ -617,19 +627,22 @@
                 native_lang: currentUser.native_lang,
                 learning_lang: currentUser.learning_lang,
                 content: content,
-                created_at: 'たった今'
+                created_at: new Date().toISOString()
             };
 
+            // Immediately prepend to local list & render instantly
             mockPosts.unshift(newPost);
             input.value = '';
+            renderPosts();
 
+            // Sync asynchronously to Supabase
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('posts').insert([newPost]);
-                } catch(e) {}
+                } catch(e) {
+                    console.error("Post Sync Error:", e);
+                }
             }
-
-            renderPosts();
         }
 
         // Render Phrases
