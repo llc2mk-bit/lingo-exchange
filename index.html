@@ -30,9 +30,8 @@
     </script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase Client CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-scalable-js@2"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Official Supabase JS Client CDN (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         .gradient-bg {
@@ -84,7 +83,7 @@
                     <span id="langToggleText">English</span>
                 </button>
 
-                <!-- User Profile / Register Button -->
+                <!-- User Profile Button -->
                 <button onclick="navigateTo('profile')" class="flex items-center space-x-2 p-1 rounded-full border border-slate-200 hover:bg-slate-100 transition">
                     <img id="navAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-8 h-8 rounded-full object-cover">
                 </button>
@@ -95,7 +94,7 @@
     <!-- Main Container -->
     <main class="flex-grow max-w-6xl w-full mx-auto p-4">
 
-        <!-- SECTION 1: Landing Page (ご指定のメッセージ) -->
+        <!-- SECTION 1: Landing Page -->
         <section id="view-landing" class="view-section">
             <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden my-4">
                 <div class="gradient-bg p-8 text-white text-center relative">
@@ -135,7 +134,7 @@
             </div>
         </section>
 
-        <!-- SECTION 2: Profile Settings / Initial Registration -->
+        <!-- SECTION 2: Profile Settings -->
         <section id="view-profile" class="view-section hidden">
             <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
                 <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center space-x-2">
@@ -164,7 +163,7 @@
                         <input type="text" id="profileName" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800" placeholder="e.g. Taro Yamada / Maria">
                     </div>
 
-                    <!-- Native Language (母国語) -->
+                    <!-- Native Language -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.native">母国語 / Native Language</label>
                         <select id="profileNative" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
@@ -174,7 +173,7 @@
                         </select>
                     </div>
 
-                    <!-- Learning Language (学びたい言語) -->
+                    <!-- Learning Language -->
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1" data-i18n="profile.learning">学びたい言語 / Language to Learn</label>
                         <select id="profileLearning" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 bg-white">
@@ -202,7 +201,7 @@
             </div>
         </section>
 
-        <!-- SECTION 3: Community Members (メンバー一覧) -->
+        <!-- SECTION 3: Community Members -->
         <section id="view-members" class="view-section hidden">
             <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -212,7 +211,7 @@
             </div>
 
             <div id="membersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Dynamic Member Cards will be rendered here -->
+                <!-- Dynamic Member Cards -->
             </div>
         </section>
 
@@ -228,7 +227,6 @@
                 </div>
             </div>
 
-            <!-- Feed Items Container -->
             <div id="feedList" class="space-y-4">
                 <!-- Posts will be rendered here -->
             </div>
@@ -251,7 +249,6 @@
     <!-- Direct Message Modal (Chat) -->
     <div id="chatModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg h-[550px] flex flex-col overflow-hidden">
-            <!-- Chat Header -->
             <div class="p-4 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <img id="chatPartnerAvatar" src="" class="w-10 h-10 rounded-full object-cover border border-slate-300">
@@ -263,12 +260,10 @@
                 <button onclick="closeChat()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">✕</button>
             </div>
 
-            <!-- Chat Messages Area -->
             <div id="chatMessages" class="flex-grow p-4 overflow-y-auto space-y-3 bg-slate-50">
-                <!-- Messages will appear here -->
+                <!-- Messages -->
             </div>
 
-            <!-- Chat Input Area -->
             <div class="p-3 bg-white border-t border-slate-200 flex items-center space-x-2">
                 <input type="text" id="chatInput" placeholder="メッセージを入力..." class="flex-grow px-4 py-2 rounded-full border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
                 <button onclick="sendMessage()" class="bg-brand-600 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-brand-700 transition">
@@ -411,10 +406,10 @@
             { visayan: 'Pila kini?', japanese: 'これはいくらですか？', english: 'How much is this?' }
         ];
 
-        // Initialize Supabase Connection
+        // Initialize Supabase Client
         function initSupabaseClient() {
             try {
-                if (window.supabase) {
+                if (window.supabase && typeof window.supabase.createClient === 'function') {
                     supabaseClient = window.supabase.createClient(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
                     console.log("Supabase Client initialized automatically.");
                     setupRealtimeSubscriptions();
