@@ -457,7 +457,7 @@ Let's get started!`;
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
         };
 
-        // Mock Partners Data
+        // Mock Partners Data (Default/Fallback list)
         let mockPartners = [
             {
                 id: 'partner_1',
@@ -496,6 +496,9 @@ Let's get started!`;
                 avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250'
             }
         ];
+
+        // Combined Community Members List (Fetched + Mock + Self)
+        let communityMembers = [...mockPartners];
 
         // Chat Data Store
         let chatMessagesData = {
@@ -632,8 +635,14 @@ Let's get started!`;
         /**
          * Save Profile Action
          */
-        function saveProfile(e) {
+        async function saveProfile(e) {
             e.preventDefault();
+            
+            // Ensure unique ID for new local profiles if user_self
+            if (currentUser.id === 'user_self') {
+                currentUser.id = 'user_' + Date.now();
+            }
+
             currentUser.name = document.getElementById('userName').value;
             currentUser.nativeLang = document.getElementById('nativeLang').value;
             currentUser.targetLang = document.getElementById('targetLang').value;
@@ -645,9 +654,28 @@ Let's get started!`;
 
             // Sync with Supabase if client is ready
             if (supabaseClient) {
-                supabaseClient.from('profiles').upsert([currentUser]).then(res => {
-                    console.log('Synced with Supabase', res);
-                });
+                try {
+                    const supabasePayload = {
+                        id: currentUser.id.startsWith('user_') ? '00000000-0000-0000-0000-' + currentUser.id.replace('user_', '').padStart(12, '0') : currentUser.id,
+                        display_name: currentUser.name,
+                        native_lang: currentUser.nativeLang,
+                        target_lang: currentUser.targetLang,
+                        location: currentUser.location,
+                        bio: currentUser.bio,
+                        avatar_url: currentUser.avatar
+                    };
+                    await supabaseClient.from('profiles').upsert([supabasePayload]);
+                } catch(err) {
+                    console.log('Supabase sync error, keeping local profile:', err);
+                }
+            }
+
+            // Immediately update community state with self profile
+            const existingIdx = mockPartners.findIndex(p => p.id === currentUser.id);
+            if (existingIdx >= 0) {
+                mockPartners[existingIdx] = { ...currentUser };
+            } else {
+                mockPartners.unshift({ ...currentUser });
             }
 
             // Navigate to community to find partners
@@ -655,16 +683,56 @@ Let's get started!`;
         }
 
         /**
-         * Community Board Renderer
+         * Community Board Renderer & Fetcher
          */
-        function renderCommunity() {
+        async function fetchCommunityProfiles() {
+            let combined = [...mockPartners];
+
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient.from('profiles').select('*');
+                    if (data && data.length > 0 && !error) {
+                        const fetchedProfiles = data.map(p => ({
+                            id: p.id,
+                            name: p.display_name || 'Anonymous',
+                            nativeLang: p.native_lang || 'Japanese',
+                            targetLang: p.target_lang || 'Visayan',
+                            location: p.location || '',
+                            bio: p.bio || '',
+                            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
+                        }));
+
+                        // Merge fetched profiles avoiding duplicates
+                        fetchedProfiles.forEach(fp => {
+                            if (!combined.some(c => c.id === fp.id)) {
+                                combined.unshift(fp);
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.log('Using local community profiles:', err);
+                }
+            }
+
+            // Always ensure active user is in the community list
+            if (currentUser && currentUser.name && !combined.some(c => c.id === currentUser.id)) {
+                combined.unshift(currentUser);
+            }
+
+            communityMembers = combined;
+        }
+
+        async function renderCommunity() {
             const grid = document.getElementById('communityGrid');
             const nativeFilter = document.getElementById('filterNative').value;
             const targetFilter = document.getElementById('filterTarget').value;
 
+            // Fetch from database/sync
+            await fetchCommunityProfiles();
+
             grid.innerHTML = '';
 
-            const filtered = mockPartners.filter(partner => {
+            const filtered = communityMembers.filter(partner => {
                 if (nativeFilter !== 'ALL' && partner.nativeLang !== nativeFilter) return false;
                 if (targetFilter !== 'ALL' && partner.targetLang !== targetFilter) return false;
                 return true;
@@ -681,15 +749,19 @@ Let's get started!`;
             }
 
             filtered.forEach(partner => {
+                const isSelf = partner.id === currentUser.id;
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4";
+                card.className = `bg-white rounded-2xl border ${isSelf ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200'} p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4`;
                 card.innerHTML = `
                     <div class="space-y-4">
                         <div class="flex items-center space-x-4">
                             <img src="${partner.avatar}" class="w-14 h-14 rounded-full object-cover border-2 border-brand-500/30">
                             <div>
-                                <h3 class="font-bold text-slate-800 text-lg leading-tight">${partner.name}</h3>
-                                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>${partner.location}</p>
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="font-bold text-slate-800 text-lg leading-tight">${partner.name}</h3>
+                                    ${isSelf ? `<span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-[10px] font-bold rounded-full">${currentLang === 'ja' ? 'あなた' : 'You'}</span>` : ''}
+                                </div>
+                                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>${partner.location || '---'}</p>
                             </div>
                         </div>
 
@@ -704,14 +776,21 @@ Let's get started!`;
                         </div>
 
                         <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            "${partner.bio}"
+                            "${partner.bio || '...'}"
                         </p>
                     </div>
 
-                    <button onclick="startChatWith('${partner.id}')" class="w-full py-2.5 bg-slate-900 hover:bg-brand-600 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        <span>${currentLang === 'ja' ? 'メッセージを送る' : 'Send Message'}</span>
-                    </button>
+                    ${isSelf ? `
+                        <button onclick="navigateTo('profile')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-pen"></i>
+                            <span>${currentLang === 'ja' ? 'プロフィールを編集' : 'Edit Profile'}</span>
+                        </button>
+                    ` : `
+                        <button onclick="startChatWith('${partner.id}')" class="w-full py-2.5 bg-slate-900 hover:bg-brand-600 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>${currentLang === 'ja' ? 'メッセージを送る' : 'Send Message'}</span>
+                        </button>
+                    `}
                 `;
                 grid.appendChild(card);
             });
