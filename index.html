@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client library -->
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
@@ -63,7 +63,7 @@
             <!-- Brand Logo -->
             <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('landing')">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                    <i class="fa-solid font-bold text-lg">LE</i>
+                    <span class="font-extrabold text-lg tracking-tight">LE</span>
                 </div>
                 <div>
                     <span class="text-xl font-bold bg-gradient-to-r from-brand-700 to-amber-600 bg-clip-text text-transparent">LingoExchange</span>
@@ -71,23 +71,21 @@
                 </div>
             </div>
 
-            <!-- Header Controls & Nav Links -->
+            <!-- Navigation Controls -->
             <div class="flex items-center space-x-3 sm:space-x-4">
-                <!-- Nav Buttons (Visible when active) -->
                 <nav id="headerNav" class="hidden md:flex items-center space-x-1 mr-2">
                     <button onclick="navigateTo('community')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition" data-target="community">
                         <i class="fa-solid fa-users mr-1.5"></i><span data-i18n="nav_community">コミュニティ</span>
                     </button>
                     <button onclick="navigateTo('chat')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition relative" data-target="chat">
                         <i class="fa-solid fa-comments mr-1.5"></i><span data-i18n="nav_chat">チャット</span>
-                        <span id="unreadBadge" class="hidden absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500"></span>
                     </button>
                     <button onclick="navigateTo('profile')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-brand-600 hover:bg-slate-100 transition" data-target="profile">
                         <i class="fa-solid fa-user mr-1.5"></i><span data-i18n="nav_profile">プロフィール</span>
                     </button>
                 </nav>
 
-                <!-- Language Toggle Switcher -->
+                <!-- Language Toggle Button -->
                 <button onclick="toggleAppLanguage()" class="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full text-xs font-semibold text-slate-700 transition">
                     <i class="fa-solid fa-globe text-brand-600"></i>
                     <span id="currentLangLabel">日本語 / English</span>
@@ -99,11 +97,10 @@
     <!-- MAIN APP CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- 1. LANDING PAGE / WELCOME SCREEN -->
+        <!-- 1. LANDING PAGE VIEW -->
         <section id="viewLanding" class="space-y-12 py-4">
-            <!-- Hero Banner -->
+            <!-- Hero Card -->
             <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900 via-brand-800 to-slate-900 text-white p-6 sm:p-10 lg:p-14 shadow-2xl">
-                <!-- Background decorative elements -->
                 <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-brand-500/20 blur-3xl"></div>
                 <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-amber-500/20 blur-3xl"></div>
 
@@ -118,24 +115,23 @@
                         言葉でつながる、文化で深まる
                     </h1>
 
-                    <!-- Featured Introduction Text -->
+                    <!-- Introduction Text Banner -->
                     <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8 text-left text-slate-100 leading-relaxed text-base sm:text-lg shadow-inner space-y-4">
                         <p id="landingIntroText" class="whitespace-pre-line font-light">
-                            <!-- Injected by JavaScript -->
+                            <!-- Dynamically loaded via JS -->
                         </p>
                     </div>
 
-                    <!-- Call To Action -->
                     <div class="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
                         <button onclick="startGetStarted()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-bold rounded-2xl shadow-lg shadow-amber-500/30 transform hover:-translate-y-0.5 transition flex items-center justify-center space-x-3 text-lg">
-                            <span data-i18n="btn_get_started">さあ、始めましょう</span>
+                            <span data-i18n="btn_get_started">さあ、始めましょう。</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Highlight Cards -->
+            <!-- Features -->
             <div class="grid md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl mb-4">
@@ -146,7 +142,7 @@
                 </div>
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center text-xl mb-4">
-                        <i class="fa-solid fa-comments text-brand-600"></i>
+                        <i class="fa-solid fa-comments"></i>
                     </div>
                     <h3 class="font-bold text-lg text-slate-800 mb-2" data-i18n="feature2_title">多言語対応</h3>
                     <p class="text-slate-600 text-sm leading-relaxed" data-i18n="feature2_desc">ビサヤ語（Cebuano）、日本語、英語に対応。お互いに楽しく学べます。</p>
@@ -161,7 +157,7 @@
             </div>
         </section>
 
-        <!-- 2. PROFILE SETUP / EDIT VIEW -->
+        <!-- 2. PROFILE VIEW -->
         <section id="viewProfile" class="hidden max-w-2xl mx-auto space-y-6">
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between pb-6 border-b border-slate-100 mb-6">
@@ -186,19 +182,18 @@
                             <button type="button" onclick="document.getElementById('avatarInput').click()" class="px-4 py-2 bg-white border border-slate-300 hover:border-brand-500 rounded-xl text-xs font-semibold text-slate-700 shadow-sm transition">
                                 <i class="fa-solid fa-upload mr-1.5"></i><span data-i18n="btn_choose_image">画像を選択 (JPEG, PNG等)</span>
                             </button>
-                            <p class="text-xs text-slate-400" data-i18n="avatar_help">PCやスマホから写真を選ぶと即座に反映されます</p>
+                            <p class="text-xs text-slate-400" data-i18n="avatar_help">PCやスマホから写真を選ぶと自動縮小して即座に反映されます</p>
                         </div>
                     </div>
 
-                    <!-- Name Field -->
+                    <!-- Name -->
                     <div>
                         <label for="userName" class="block font-semibold text-slate-700 text-sm mb-1" data-i18n="label_name">お名前 / ニックネーム</label>
                         <input type="text" id="userName" required placeholder="例: Ken / Maria" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
                     </div>
 
-                    <!-- Language Preferences -->
+                    <!-- Languages -->
                     <div class="grid sm:grid-cols-2 gap-4">
-                        <!-- Native Language -->
                         <div>
                             <label for="nativeLang" class="block font-semibold text-slate-700 text-sm mb-1" data-i18n="label_native_lang">母国語 (Native Language)</label>
                             <select id="nativeLang" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition bg-white">
@@ -207,7 +202,6 @@
                                 <option value="English">英語 (English)</option>
                             </select>
                         </div>
-                        <!-- Target Language -->
                         <div>
                             <label for="targetLang" class="block font-semibold text-slate-700 text-sm mb-1" data-i18n="label_target_lang">学びたい言語 (Learning Language)</label>
                             <select id="targetLang" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition bg-white">
@@ -218,7 +212,7 @@
                         </div>
                     </div>
 
-                    <!-- Location / Bio -->
+                    <!-- Location & Bio -->
                     <div>
                         <label for="userLocation" class="block font-semibold text-slate-700 text-sm mb-1" data-i18n="label_location">居住地 (Location)</label>
                         <input type="text" id="userLocation" placeholder="例: 東京 (Tokyo) / Cebu City" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
@@ -229,7 +223,6 @@
                         <textarea id="userBio" rows="3" placeholder="自己紹介や興味のあるトピックを入力してください..." class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition"></textarea>
                     </div>
 
-                    <!-- Submit Button -->
                     <button type="submit" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span data-i18n="btn_save_profile">保存してパートナーを探す</span>
@@ -238,9 +231,8 @@
             </div>
         </section>
 
-        <!-- 3. COMMUNITY / FIND PARTNERS VIEW -->
+        <!-- 3. COMMUNITY VIEW -->
         <section id="viewCommunity" class="hidden space-y-6">
-            <!-- Filter Bar -->
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-bold text-slate-800" data-i18n="community_title">言語交換パートナーを探す</h2>
@@ -262,31 +254,28 @@
                 </div>
             </div>
 
-            <!-- Partners Grid -->
             <div id="communityGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamic Content Injected Here -->
+                <!-- Injected via JavaScript -->
             </div>
         </section>
 
-        <!-- 4. CHAT INTERFACE VIEW -->
+        <!-- 4. CHAT VIEW -->
         <section id="viewChat" class="hidden h-[calc(100vh-10rem)] max-h-[750px]">
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm h-full flex flex-col md:flex-row overflow-hidden">
-                <!-- Chat Partner List (Sidebar) -->
+                <!-- Sidebar Users -->
                 <div class="w-full md:w-80 border-r border-slate-200 flex flex-col bg-slate-50/50">
                     <div class="p-4 border-b border-slate-200 bg-white">
                         <h3 class="font-bold text-slate-800" data-i18n="chat_list_title">メッセージ一覧</h3>
                     </div>
                     <div id="chatUserList" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
-                        <!-- Dynamic Chat Conversations -->
                     </div>
                 </div>
 
-                <!-- Active Conversation Window -->
+                <!-- Active Chat Panel -->
                 <div class="flex-1 flex flex-col h-full bg-white">
-                    <!-- Chat Header -->
                     <div id="activeChatHeader" class="p-4 border-b border-slate-200 flex items-center justify-between bg-white">
                         <div class="flex items-center space-x-3">
-                            <img id="chatHeaderAvatar" src="https://placehold.co/100x100/e2e8f0/64748b?text=User" class="w-10 h-10 rounded-full object-cover">
+                            <img id="chatHeaderAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250" class="w-10 h-10 rounded-full object-cover">
                             <div>
                                 <h4 id="chatHeaderName" class="font-bold text-slate-800 leading-snug">ユーザーを選択してください</h4>
                                 <span id="chatHeaderLang" class="text-xs text-slate-500">----</span>
@@ -297,7 +286,6 @@
                                 <i class="fa-solid fa-lightbulb text-amber-500"></i>
                                 <span data-i18n="btn_phrases">便利フレーズ</span>
                             </button>
-                            <!-- Phrases Dropdown -->
                             <div id="phrasesDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 p-3 z-30 space-y-2 text-xs">
                                 <div class="font-bold text-slate-700 border-b border-slate-100 pb-1">有用なフレーズ</div>
                                 <button onclick="insertPhrase('Maayong buntag! (おはようございます)')" class="w-full text-left p-1.5 hover:bg-slate-50 rounded text-slate-700">☀️ Maayong buntag! (おはよう)</button>
@@ -308,14 +296,12 @@
                         </div>
                     </div>
 
-                    <!-- Chat Messages Box -->
                     <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar bg-slate-50/30">
                         <div class="flex items-center justify-center h-full text-slate-400 text-sm">
                             <p data-i18n="chat_placeholder">左のリストから会話をスタートしてください</p>
                         </div>
                     </div>
 
-                    <!-- Input Bar -->
                     <form id="chatInputForm" onsubmit="sendChatMessage(event)" class="p-3 border-t border-slate-200 bg-white flex items-center space-x-2">
                         <input type="text" id="chatInput" placeholder="メッセージを入力..." class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-sm" disabled>
                         <button type="submit" id="chatSendBtn" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1" disabled>
@@ -328,7 +314,7 @@
         </section>
     </main>
 
-    <!-- BOTTOM MOBILE NAVIGATION BAR -->
+    <!-- MOBILE NAVIGATION -->
     <nav class="md:hidden sticky bottom-0 z-40 bg-white border-t border-slate-200 py-2 px-4 flex justify-around items-center">
         <button onclick="navigateTo('landing')" class="mobile-nav-btn flex flex-col items-center text-slate-500 hover:text-brand-600 text-xs" data-target="landing">
             <i class="fa-solid fa-house text-lg"></i>
@@ -348,12 +334,9 @@
         </button>
     </nav>
 
-    <!-- APPLICATION JAVASCRIPT LOGIC -->
+    <!-- LOGIC -->
     <script>
-        /**
-         * State & Translations Definition
-         */
-        let currentLang = 'ja'; // 'ja' or 'en'
+        let currentLang = 'ja';
         const DEFAULT_SUPABASE_URL = 'https://kfluauexqqmdnuyrstlk.supabase.co';
         const DEFAULT_SUPABASE_KEY = 'sb_publishable_uK9mIhI09mAxFeDYkRRTuA_zScMhx1l';
         let supabaseClient = null;
@@ -381,7 +364,7 @@ Let's get started!`;
                 nav_chat: "チャット",
                 nav_profile: "プロフィール",
                 hero_title: "言葉でつながる、文化で深まる",
-                btn_get_started: "さあ、始めましょう",
+                btn_get_started: "さあ、始めましょう。",
                 feature1_title: "心の通う交流",
                 feature1_desc: "フィリピンの温かいホスピタリティと日本の誠実な文化がであい、言語以上の絆を育みます。",
                 feature2_title: "多言語対応",
@@ -392,7 +375,7 @@ Let's get started!`;
                 profile_subtitle: "あなたの情報と学習言語を設定しましょう",
                 avatar_label: "プロフィール画像",
                 btn_choose_image: "画像を選択 (JPEG, PNG等)",
-                avatar_help: "PCやスマホから写真を選ぶと即座に反映されます",
+                avatar_help: "PCやスマホから写真を選ぶと自動縮小して即座に反映されます",
                 label_name: "お名前 / ニックネーム",
                 label_native_lang: "母国語 (Native Language)",
                 label_target_lang: "学びたい言語 (Learning Language)",
@@ -425,7 +408,7 @@ Let's get started!`;
                 profile_subtitle: "Set up your information and target language",
                 avatar_label: "Profile Picture",
                 btn_choose_image: "Choose Image (JPEG, PNG, etc.)",
-                avatar_help: "Select a photo from PC or mobile to update instantly",
+                avatar_help: "Select a photo from PC or mobile to auto-compress and update instantly",
                 label_name: "Name / Nickname",
                 label_native_lang: "Native Language",
                 label_target_lang: "Learning Language",
@@ -443,7 +426,6 @@ Let's get started!`;
             }
         };
 
-        // Current User Profile State
         let currentUser = {
             id: 'user_self',
             name: 'あなた (You)',
@@ -454,7 +436,6 @@ Let's get started!`;
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
         };
 
-        // Mock Partners Data
         let mockPartners = [
             {
                 id: 'partner_1',
@@ -482,19 +463,9 @@ Let's get started!`;
                 location: 'Davao, Philippines',
                 bio: 'Hi! I am working in hospitality. Wanting to practice English conversation.',
                 avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250'
-            },
-            {
-                id: 'partner_4',
-                name: 'Yuka Tanaka',
-                nativeLang: 'Japanese',
-                targetLang: 'English',
-                location: 'Fukuoka, Japan',
-                bio: '来年留学予定です！現地の人と英語で話せるようになりたいです。',
-                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250'
             }
         ];
 
-        // Chat Data Store
         let chatMessagesData = {
             'partner_1': [
                 { sender: 'partner_1', text: 'Maayong adlaw! 初めまして、マリアです。', time: '10:15' },
@@ -502,15 +473,10 @@ Let's get started!`;
             ]
         };
 
-        /**
-         * Initialization Function
-         */
         window.onload = function () {
             const savedUser = localStorage.getItem('lingo_user');
             if (savedUser) {
-                try {
-                    currentUser = { ...currentUser, ...JSON.parse(savedUser) };
-                } catch(e) {}
+                try { currentUser = { ...currentUser, ...JSON.parse(savedUser) }; } catch(e) {}
             }
 
             document.getElementById('userName').value = currentUser.name;
@@ -525,12 +491,8 @@ Let's get started!`;
             navigateTo('landing');
         };
 
-        /**
-         * Navigation Handler
-         */
         function navigateTo(viewName) {
             activeView = viewName;
-
             document.getElementById('viewLanding').classList.add('hidden');
             document.getElementById('viewProfile').classList.add('hidden');
             document.getElementById('viewCommunity').classList.add('hidden');
@@ -546,17 +508,6 @@ Let's get started!`;
                 document.getElementById('viewChat').classList.remove('hidden');
                 renderChatUserList();
             }
-
-            document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
-                const target = btn.getAttribute('data-target');
-                if (target === viewName) {
-                    btn.classList.add('text-brand-600', 'font-bold');
-                    btn.classList.remove('text-slate-500', 'text-slate-600');
-                } else {
-                    btn.classList.remove('text-brand-600', 'font-bold');
-                    btn.classList.add('text-slate-500', 'text-slate-600');
-                }
-            });
         }
 
         function toggleAppLanguage() {
@@ -572,9 +523,7 @@ Let's get started!`;
             const dict = translations[currentLang];
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (dict[key]) {
-                    el.textContent = dict[key];
-                }
+                if (dict[key]) el.textContent = dict[key];
             });
         }
 
@@ -582,17 +531,44 @@ Let's get started!`;
             navigateTo('profile');
         }
 
+        // Resizes images client-side under 800px max width/height to avoid mobile payload timeout
         function handleAvatarUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function (event) {
-                const base64Url = event.target.result;
-                document.getElementById('avatarPreview').src = base64Url;
-                currentUser.avatar = base64Url;
-            };
             reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 800;
+
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    document.getElementById('avatarPreview').src = compressedUrl;
+                    currentUser.avatar = compressedUrl;
+                };
+            };
         }
 
         function saveProfile(e) {
@@ -605,24 +581,6 @@ Let's get started!`;
 
             localStorage.setItem('lingo_user', JSON.stringify(currentUser));
 
-            const existingIndex = mockPartners.findIndex(p => p.id === currentUser.id);
-            const userCardData = {
-                id: currentUser.id,
-                name: currentUser.name,
-                nativeLang: currentUser.nativeLang,
-                targetLang: currentUser.targetLang,
-                location: currentUser.location || (currentLang === 'ja' ? '未設定' : 'Not set'),
-                bio: currentUser.bio || (currentLang === 'ja' ? 'よろしくお願いします！' : 'Hello! Nice to meet you!'),
-                avatar: currentUser.avatar,
-                isSelf: true
-            };
-
-            if (existingIndex >= 0) {
-                mockPartners[existingIndex] = userCardData;
-            } else {
-                mockPartners.unshift(userCardData);
-            }
-
             if (supabaseClient) {
                 supabaseClient.from('profiles').upsert([{
                     display_name: currentUser.name,
@@ -631,11 +589,9 @@ Let's get started!`;
                     location: currentUser.location,
                     bio: currentUser.bio,
                     avatar_url: currentUser.avatar
-                }]).then(res => console.log('Profile synced with Supabase')).catch(err => console.warn(err));
+                }]).then(() => console.log('Profile synced with Supabase')).catch(err => console.warn(err));
             }
 
-            document.getElementById('filterNative').value = 'ALL';
-            document.getElementById('filterTarget').value = 'ALL';
             navigateTo('community');
         }
 
@@ -647,7 +603,7 @@ Let's get started!`;
             const selfIndex = mockPartners.findIndex(p => p.id === currentUser.id);
             const selfData = {
                 id: currentUser.id,
-                name: currentUser.name + (currentLang === 'ja' ? ' (あなた)' : ' (You)'),
+                name: currentUser.name,
                 nativeLang: currentUser.nativeLang,
                 targetLang: currentUser.targetLang,
                 location: currentUser.location || (currentLang === 'ja' ? '未設定' : 'Not set'),
@@ -656,11 +612,8 @@ Let's get started!`;
                 isSelf: true
             };
 
-            if (selfIndex >= 0) {
-                mockPartners[selfIndex] = selfData;
-            } else {
-                mockPartners.unshift(selfData);
-            }
+            if (selfIndex >= 0) mockPartners[selfIndex] = selfData;
+            else mockPartners.unshift(selfData);
 
             grid.innerHTML = '';
 
@@ -670,16 +623,6 @@ Let's get started!`;
                 return true;
             });
 
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-slate-400">
-                        <i class="fa-solid fa-user-slash text-4xl mb-3"></i>
-                        <p>${currentLang === 'ja' ? '条件に一致するパートナーが見つかりませんでした' : 'No partners found matching criteria'}</p>
-                    </div>
-                `;
-                return;
-            }
-
             filtered.forEach(partner => {
                 const isSelf = partner.id === currentUser.id || partner.isSelf;
                 const card = document.createElement('div');
@@ -687,7 +630,7 @@ Let's get started!`;
                 card.innerHTML = `
                     <div class="space-y-4">
                         <div class="flex items-center space-x-4">
-                            <img src="${partner.avatar}" class="w-14 h-14 rounded-full object-cover border-2 ${isSelf ? 'border-brand-500' : 'border-brand-500/30'}">
+                            <img src="${partner.avatar}" class="w-14 h-14 rounded-full object-cover border-2 border-brand-500/30">
                             <div>
                                 <div class="flex items-center space-x-2">
                                     <h3 class="font-bold text-slate-800 text-lg leading-tight">${partner.name}</h3>
@@ -698,13 +641,9 @@ Let's get started!`;
                         </div>
 
                         <div class="flex items-center space-x-2 text-xs">
-                            <span class="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-full font-medium">
-                                🗣 ${partner.nativeLang}
-                            </span>
+                            <span class="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-full font-medium">🗣 ${partner.nativeLang}</span>
                             <span class="text-slate-400">➔</span>
-                            <span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-medium">
-                                🎯 ${partner.targetLang}
-                            </span>
+                            <span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-medium">🎯 ${partner.targetLang}</span>
                         </div>
 
                         <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -743,15 +682,11 @@ Let's get started!`;
                 const div = document.createElement('div');
                 div.className = `p-3.5 flex items-center space-x-3 cursor-pointer hover:bg-slate-100 transition ${isSelected ? 'bg-brand-50/60 border-l-4 border-brand-600' : ''}`;
                 div.onclick = () => openChatConversation(partner.id);
-
                 div.innerHTML = `
                     <img src="${partner.avatar}" class="w-10 h-10 rounded-full object-cover">
                     <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-baseline">
-                            <h4 class="font-bold text-xs text-slate-800 truncate">${partner.name}</h4>
-                            <span class="text-[10px] text-slate-400">Native: ${partner.nativeLang}</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 truncate mt-0.5">タップして会話を開く</p>
+                        <h4 class="font-bold text-xs text-slate-800 truncate">${partner.name}</h4>
+                        <p class="text-[11px] text-slate-500 truncate mt-0.5">Native: ${partner.nativeLang}</p>
                     </div>
                 `;
                 listContainer.appendChild(div);
@@ -768,7 +703,6 @@ Let's get started!`;
             document.getElementById('chatHeaderName').textContent = partner.name;
             document.getElementById('chatHeaderLang').textContent = `Native: ${partner.nativeLang} | Target: ${partner.targetLang}`;
             document.getElementById('chatHeaderAvatar').src = partner.avatar;
-
             document.getElementById('chatInput').disabled = false;
             document.getElementById('chatSendBtn').disabled = false;
 
@@ -780,21 +714,10 @@ Let's get started!`;
             messagesBox.innerHTML = '';
 
             const msgs = chatMessagesData[activeChatPartnerId] || [];
-
-            if (msgs.length === 0) {
-                messagesBox.innerHTML = `
-                    <div class="text-center text-xs text-slate-400 my-8">
-                        ${currentLang === 'ja' ? '最初のメッセージを送信して挨拶してみましょう！' : 'Say hi and start your language exchange!'}
-                    </div>
-                `;
-                return;
-            }
-
             msgs.forEach(msg => {
                 const isSelf = msg.sender === 'user_self';
                 const wrap = document.createElement('div');
                 wrap.className = `flex ${isSelf ? 'justify-end' : 'justify-start'} mb-3`;
-
                 wrap.innerHTML = `
                     <div class="max-w-[75%] ${isSelf ? 'bg-brand-600 text-white rounded-2xl rounded-tr-none' : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-none'} p-3 shadow-sm">
                         <p class="text-xs leading-relaxed">${msg.text}</p>
@@ -803,7 +726,6 @@ Let's get started!`;
                 `;
                 messagesBox.appendChild(wrap);
             });
-
             messagesBox.scrollTop = messagesBox.scrollHeight;
         }
 
@@ -813,37 +735,18 @@ Let's get started!`;
             const text = input.value.trim();
             if (!text || !activeChatPartnerId) return;
 
-            if (!chatMessagesData[activeChatPartnerId]) {
-                chatMessagesData[activeChatPartnerId] = [];
-            }
+            if (!chatMessagesData[activeChatPartnerId]) chatMessagesData[activeChatPartnerId] = [];
 
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-            chatMessagesData[activeChatPartnerId].push({
-                sender: 'user_self',
-                text: text,
-                time: timeStr
-            });
-
+            chatMessagesData[activeChatPartnerId].push({ sender: 'user_self', text: text, time: timeStr });
             input.value = '';
             renderMessages();
-
-            setTimeout(() => {
-                if (chatMessagesData[activeChatPartnerId]) {
-                    chatMessagesData[activeChatPartnerId].push({
-                        sender: activeChatPartnerId,
-                        text: currentLang === 'ja' ? 'メッセージありがとうございます！一緒に勉強をがんばりましょう！' : 'Salamat! Thank you for the message, let us study together!',
-                        time: new Date().getHours().toString().padStart(2, '0') + ':' + new Date().getMinutes().toString().padStart(2, '0')
-                    });
-                    renderMessages();
-                }
-            }, 1200);
         }
 
         function togglePhrasesDropdown() {
-            const drop = document.getElementById('phrasesDropdown');
-            drop.classList.toggle('hidden');
+            document.getElementById('phrasesDropdown').classList.toggle('hidden');
         }
 
         function insertPhrase(phrase) {
@@ -855,9 +758,7 @@ Let's get started!`;
 
         function initSupabase(url, key) {
             try {
-                if (window.supabase) {
-                    supabaseClient = window.supabase.createClient(url, key);
-                }
+                if (window.supabase) supabaseClient = window.supabase.createClient(url, key);
             } catch (err) {
                 console.error("Supabase init error:", err);
             }
