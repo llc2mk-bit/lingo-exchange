@@ -67,7 +67,7 @@
                 </div>
                 <div>
                     <span class="text-xl font-bold bg-gradient-to-r from-brand-700 to-amber-600 bg-clip-text text-transparent">LingoExchange</span>
-                    <span class="hidden sm:inline-block text-xs text-slate-400 ml-2 font-medium">JP ⇆ Visayan</span>
+                    <span class="hidden sm:inline-block text-xs text-slate-400 ml-2 font-medium">JP ⇆ Visayan ⇆ EN</span>
                 </div>
             </div>
 
@@ -92,7 +92,6 @@
                     <i class="fa-solid fa-globe text-brand-600"></i>
                     <span id="currentLangLabel">日本語 / English</span>
                 </button>
-
             </div>
         </div>
     </header>
@@ -119,10 +118,10 @@
                         言葉でつながる、文化で深まる
                     </h1>
 
-                    <!-- Featured Introduction Text (Requirement 1) -->
+                    <!-- Featured Introduction Text -->
                     <div class="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8 text-left text-slate-100 leading-relaxed text-base sm:text-lg shadow-inner space-y-4">
                         <p id="landingIntroText" class="whitespace-pre-line font-light">
-                            <!-- Injected by JavaScript according to requirements -->
+                            <!-- Injected by JavaScript -->
                         </p>
                     </div>
 
@@ -149,8 +148,8 @@
                     <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center text-xl mb-4">
                         <i class="fa-solid fa-comments text-brand-600"></i>
                     </div>
-                    <h3 class="font-bold text-lg text-slate-800 mb-2" data-i18n="feature2_title">ビサヤ語 / Visayan 特化</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed" data-i18n="feature2_desc">セブやミンダナオ等で広く話されるビサヤ語（Cebuano）と日本語を効率よく学べます。</p>
+                    <h3 class="font-bold text-lg text-slate-800 mb-2" data-i18n="feature2_title">多言語対応</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed" data-i18n="feature2_desc">ビサヤ語（Cebuano）、日本語、英語に対応。お互いに楽しく学べます。</p>
                 </div>
                 <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-xl mb-4">
@@ -173,7 +172,7 @@
                 </div>
 
                 <form id="profileForm" onsubmit="saveProfile(event)" class="space-y-6">
-                    <!-- Avatar Upload (Requirement 3) -->
+                    <!-- Avatar Upload -->
                     <div class="flex flex-col sm:flex-row items-center gap-6 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                         <div class="relative group">
                             <img id="avatarPreview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250" alt="Avatar Preview" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md">
@@ -197,7 +196,7 @@
                         <input type="text" id="userName" required placeholder="例: Ken / Maria" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition">
                     </div>
 
-                    <!-- Language Preferences (Requirement 2) -->
+                    <!-- Language Preferences -->
                     <div class="grid sm:grid-cols-2 gap-4">
                         <!-- Native Language -->
                         <div>
@@ -214,6 +213,7 @@
                             <select id="targetLang" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition bg-white">
                                 <option value="Visayan">ビサヤ語 (Visayan / Cebuano)</option>
                                 <option value="Japanese">日本語 (Japanese)</option>
+                                <option value="English">英語 (English)</option>
                             </select>
                         </div>
                     </div>
@@ -257,6 +257,7 @@
                         <option value="ALL" data-i18n="filter_all_target">学習言語: 全て</option>
                         <option value="Visayan">学習言語: ビサヤ語</option>
                         <option value="Japanese">学習言語: 日本語</option>
+                        <option value="English">学習言語: 英語</option>
                     </select>
                 </div>
             </div>
@@ -298,7 +299,7 @@
                             </button>
                             <!-- Phrases Dropdown -->
                             <div id="phrasesDropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 p-3 z-30 space-y-2 text-xs">
-                                <div class="font-bold text-slate-700 border-b border-slate-100 pb-1">有用なビサヤ語フレーズ</div>
+                                <div class="font-bold text-slate-700 border-b border-slate-100 pb-1">有用なフレーズ</div>
                                 <button onclick="insertPhrase('Maayong buntag! (おはようございます)')" class="w-full text-left p-1.5 hover:bg-slate-50 rounded text-slate-700">☀️ Maayong buntag! (おはよう)</button>
                                 <button onclick="insertPhrase('Salamat kaayo! (ありがとうございます)')" class="w-full text-left p-1.5 hover:bg-slate-50 rounded text-slate-700">🙏 Salamat kaayo! (ありがとう)</button>
                                 <button onclick="insertPhrase('Unsaon pag-ingon sa ... sa Bisaya? (...はビサヤ語で何と言いますか？)')" class="w-full text-left p-1.5 hover:bg-slate-50 rounded text-slate-700">❓ Unsaon pag-ingon sa... (〜は何と言いますか？)</button>
@@ -353,12 +354,12 @@
          * State & Translations Definition
          */
         let currentLang = 'ja'; // 'ja' or 'en'
-        // Hardcoded Supabase Credentials for all devices
         const DEFAULT_SUPABASE_URL = 'https://kfluauexqqmdnuyrstlk.supabase.co';
         const DEFAULT_SUPABASE_KEY = 'sb_publishable_uK9mIhI09mAxFeDYkRRTuA_zScMhx1l';
         let supabaseClient = null;
+        let activeView = 'landing';
+        let activeChatPartnerId = null;
 
-        // Requirement 1 Text (Exact Japanese & English Translation)
         const INTRO_TEXT_JA = `このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
 日本は伝統と文化を大切にする国です。しかし若者の人口は年々減っていき、フィリピンの人たちの協力が必要です。日本語を学ぶことで、多くのフィリピンの人たちが日本に興味を持ち、日本で活躍してもらいたいと思います。
 フィリピンは、平均年齢が２４歳と若い国です、人々は、明るくフレンドリーな性格や高いホスピタリティ精神、家族を最優先にする深い家族愛に溢れています。
@@ -383,8 +384,8 @@ Let's get started!`;
                 btn_get_started: "さあ、始めましょう",
                 feature1_title: "心の通う交流",
                 feature1_desc: "フィリピンの温かいホスピタリティと日本の誠実な文化がであい、言語以上の絆を育みます。",
-                feature2_title: "ビサヤ語 / Visayan 特化",
-                feature2_desc: "セブやミンダナオ等で広く話されるビサヤ語（Cebuano）と日本語を効率よく学べます。",
+                feature2_title: "多言語対応",
+                feature2_desc: "ビサヤ語（Cebuano）、日本語、英語に対応。お互いに楽しく学べます。",
                 feature3_title: "安心のコミュニティ",
                 feature3_desc: "互いの文化をリスペクトし合える環境。登録・プロフィールの設定もカンタンです。",
                 profile_title: "プロフィール設定",
@@ -405,9 +406,7 @@ Let's get started!`;
                 chat_list_title: "メッセージ一覧",
                 chat_placeholder: "左のリストから会話をスタートしてください",
                 btn_phrases: "便利フレーズ",
-                btn_send: "送信",
-                db_local: "ローカル保存中",
-                db_supabase: "Supabase連携中"
+                btn_send: "送信"
             },
             en: {
                 nav_home: "Home",
@@ -418,8 +417,8 @@ Let's get started!`;
                 btn_get_started: "Let's Get Started",
                 feature1_title: "Heartfelt Exchange",
                 feature1_desc: "Connecting Filipino warmth and Japanese sincerity to build bonds beyond language.",
-                feature2_title: "Visayan Focus",
-                feature2_desc: "Learn Visayan (Cebuano) spoken widely in Cebu/Mindanao alongside Japanese effectively.",
+                feature2_title: "Multilingual Support",
+                feature2_desc: "Supports Visayan (Cebuano), Japanese, and English learning easily.",
                 feature3_title: "Safe Community",
                 feature3_desc: "A safe space respecting both cultures. Simple profile & account setup.",
                 profile_title: "Profile Settings",
@@ -440,9 +439,7 @@ Let's get started!`;
                 chat_list_title: "Messages",
                 chat_placeholder: "Select a partner from the left to start chatting",
                 btn_phrases: "Quick Phrases",
-                btn_send: "Send",
-                db_local: "Local Storage Mode",
-                db_supabase: "Supabase Connected"
+                btn_send: "Send"
             }
         };
 
@@ -457,7 +454,7 @@ Let's get started!`;
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
         };
 
-        // Mock Partners Data (Default/Fallback list)
+        // Mock Partners Data
         let mockPartners = [
             {
                 id: 'partner_1',
@@ -481,24 +478,21 @@ Let's get started!`;
                 id: 'partner_3',
                 name: 'Junrey Alcantara',
                 nativeLang: 'Visayan',
-                targetLang: 'Japanese',
+                targetLang: 'English',
                 location: 'Davao, Philippines',
-                bio: 'Hi! I am working in hospitality. Wanting to practice Japanese business conversation.',
+                bio: 'Hi! I am working in hospitality. Wanting to practice English conversation.',
                 avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250'
             },
             {
                 id: 'partner_4',
                 name: 'Yuka Tanaka',
                 nativeLang: 'Japanese',
-                targetLang: 'Visayan',
+                targetLang: 'English',
                 location: 'Fukuoka, Japan',
-                bio: '来年セブ島に留学予定です！現地の人と友達になりたいです。',
+                bio: '来年留学予定です！現地の人と英語で話せるようになりたいです。',
                 avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250'
             }
         ];
-
-        // Combined Community Members List (Fetched + Mock + Self)
-        let communityMembers = [...mockPartners];
 
         // Chat Data Store
         let chatMessagesData = {
@@ -512,7 +506,6 @@ Let's get started!`;
          * Initialization Function
          */
         window.onload = function () {
-            // Load saved user profile from LocalStorage if available
             const savedUser = localStorage.getItem('lingo_user');
             if (savedUser) {
                 try {
@@ -520,7 +513,6 @@ Let's get started!`;
                 } catch(e) {}
             }
 
-            // Init Profile Form Elements
             document.getElementById('userName').value = currentUser.name;
             document.getElementById('nativeLang').value = currentUser.nativeLang;
             document.getElementById('targetLang').value = currentUser.targetLang;
@@ -528,13 +520,8 @@ Let's get started!`;
             document.getElementById('userBio').value = currentUser.bio;
             document.getElementById('avatarPreview').src = currentUser.avatar;
 
-            // Initialize Supabase silently in background
             initSupabase(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
-
-            // Set Initial Language Text
             updateLanguageUI();
-
-            // Render Default View (Landing)
             navigateTo('landing');
         };
 
@@ -544,13 +531,11 @@ Let's get started!`;
         function navigateTo(viewName) {
             activeView = viewName;
 
-            // Hide all views
             document.getElementById('viewLanding').classList.add('hidden');
             document.getElementById('viewProfile').classList.add('hidden');
             document.getElementById('viewCommunity').classList.add('hidden');
             document.getElementById('viewChat').classList.add('hidden');
 
-            // Show selected view
             if (viewName === 'landing') document.getElementById('viewLanding').classList.remove('hidden');
             if (viewName === 'profile') document.getElementById('viewProfile').classList.remove('hidden');
             if (viewName === 'community') {
@@ -562,7 +547,6 @@ Let's get started!`;
                 renderChatUserList();
             }
 
-            // Update Nav Highlight State
             document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
                 const target = btn.getAttribute('data-target');
                 if (target === viewName) {
@@ -573,166 +557,114 @@ Let's get started!`;
                     btn.classList.add('text-slate-500', 'text-slate-600');
                 }
             });
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        /**
-         * Requirement 1: Start Button Handler
-         */
-        function startGetStarted() {
-            navigateTo('profile');
-        }
-
-        /**
-         * Requirement 2 & UI: Language Switcher Toggle (Japanese / English)
-         */
         function toggleAppLanguage() {
             currentLang = currentLang === 'ja' ? 'en' : 'ja';
             updateLanguageUI();
+            if (activeView === 'community') renderCommunity();
         }
 
         function updateLanguageUI() {
-            // Update Toggle Button Label
-            document.getElementById('currentLangLabel').textContent = currentLang === 'ja' ? '日本語 / English' : 'English / 日本語';
+            document.getElementById('landingIntroText').textContent = currentLang === 'ja' ? INTRO_TEXT_JA : INTRO_TEXT_EN;
+            document.getElementById('currentLangLabel').textContent = currentLang === 'ja' ? 'English' : '日本語';
 
-            // Update Requirement 1 Intro Text
-            const introElem = document.getElementById('landingIntroText');
-            introElem.textContent = currentLang === 'ja' ? INTRO_TEXT_JA : INTRO_TEXT_EN;
-
-            // Translate Static Elements with data-i18n
-            document.querySelectorAll('[data-i18n]').forEach(elem => {
-                const key = elem.getAttribute('data-i18n');
-                if (translations[currentLang][key]) {
-                    elem.textContent = translations[currentLang][key];
+            const dict = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.textContent = dict[key];
                 }
             });
         }
 
-        /**
-         * Requirement 3: Profile Image File Upload Handler
-         */
-        function handleAvatarUpload(event) {
-            const file = event.target.files[0];
+        function startGetStarted() {
+            navigateTo('profile');
+        }
+
+        function handleAvatarUpload(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
-            // Validate File Type
-            if (!file.type.match('image.*')) {
-                alert(currentLang === 'ja' ? '画像ファイル(JPEG, PNG等)を選択してください' : 'Please select an image file (JPEG, PNG).');
-                return;
-            }
-
-            // Read File with FileReader API
             const reader = new FileReader();
-            reader.onload = function (e) {
-                const dataUrl = e.target.result;
-                document.getElementById('avatarPreview').src = dataUrl;
-                currentUser.avatar = dataUrl;
+            reader.onload = function (event) {
+                const base64Url = event.target.result;
+                document.getElementById('avatarPreview').src = base64Url;
+                currentUser.avatar = base64Url;
             };
             reader.readAsDataURL(file);
         }
 
-        /**
-         * Save Profile Action
-         */
-        async function saveProfile(e) {
+        function saveProfile(e) {
             e.preventDefault();
-            
-            // Ensure unique ID for new local profiles if user_self
-            if (currentUser.id === 'user_self') {
-                currentUser.id = 'user_' + Date.now();
-            }
-
             currentUser.name = document.getElementById('userName').value;
             currentUser.nativeLang = document.getElementById('nativeLang').value;
             currentUser.targetLang = document.getElementById('targetLang').value;
             currentUser.location = document.getElementById('userLocation').value;
             currentUser.bio = document.getElementById('userBio').value;
 
-            // Save locally
             localStorage.setItem('lingo_user', JSON.stringify(currentUser));
 
-            // Sync with Supabase if client is ready
-            if (supabaseClient) {
-                try {
-                    const supabasePayload = {
-                        id: currentUser.id.startsWith('user_') ? '00000000-0000-0000-0000-' + currentUser.id.replace('user_', '').padStart(12, '0') : currentUser.id,
-                        display_name: currentUser.name,
-                        native_lang: currentUser.nativeLang,
-                        target_lang: currentUser.targetLang,
-                        location: currentUser.location,
-                        bio: currentUser.bio,
-                        avatar_url: currentUser.avatar
-                    };
-                    await supabaseClient.from('profiles').upsert([supabasePayload]);
-                } catch(err) {
-                    console.log('Supabase sync error, keeping local profile:', err);
-                }
-            }
+            const existingIndex = mockPartners.findIndex(p => p.id === currentUser.id);
+            const userCardData = {
+                id: currentUser.id,
+                name: currentUser.name,
+                nativeLang: currentUser.nativeLang,
+                targetLang: currentUser.targetLang,
+                location: currentUser.location || (currentLang === 'ja' ? '未設定' : 'Not set'),
+                bio: currentUser.bio || (currentLang === 'ja' ? 'よろしくお願いします！' : 'Hello! Nice to meet you!'),
+                avatar: currentUser.avatar,
+                isSelf: true
+            };
 
-            // Immediately update community state with self profile
-            const existingIdx = mockPartners.findIndex(p => p.id === currentUser.id);
-            if (existingIdx >= 0) {
-                mockPartners[existingIdx] = { ...currentUser };
+            if (existingIndex >= 0) {
+                mockPartners[existingIndex] = userCardData;
             } else {
-                mockPartners.unshift({ ...currentUser });
+                mockPartners.unshift(userCardData);
             }
 
-            // Navigate to community to find partners
+            if (supabaseClient) {
+                supabaseClient.from('profiles').upsert([{
+                    display_name: currentUser.name,
+                    native_lang: currentUser.nativeLang,
+                    target_lang: currentUser.targetLang,
+                    location: currentUser.location,
+                    bio: currentUser.bio,
+                    avatar_url: currentUser.avatar
+                }]).then(res => console.log('Profile synced with Supabase')).catch(err => console.warn(err));
+            }
+
+            document.getElementById('filterNative').value = 'ALL';
+            document.getElementById('filterTarget').value = 'ALL';
             navigateTo('community');
         }
 
-        /**
-         * Community Board Renderer & Fetcher
-         */
-        async function fetchCommunityProfiles() {
-            let combined = [...mockPartners];
-
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.from('profiles').select('*');
-                    if (data && data.length > 0 && !error) {
-                        const fetchedProfiles = data.map(p => ({
-                            id: p.id,
-                            name: p.display_name || 'Anonymous',
-                            nativeLang: p.native_lang || 'Japanese',
-                            targetLang: p.target_lang || 'Visayan',
-                            location: p.location || '',
-                            bio: p.bio || '',
-                            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
-                        }));
-
-                        // Merge fetched profiles avoiding duplicates
-                        fetchedProfiles.forEach(fp => {
-                            if (!combined.some(c => c.id === fp.id)) {
-                                combined.unshift(fp);
-                            }
-                        });
-                    }
-                } catch (err) {
-                    console.log('Using local community profiles:', err);
-                }
-            }
-
-            // Always ensure active user is in the community list
-            if (currentUser && currentUser.name && !combined.some(c => c.id === currentUser.id)) {
-                combined.unshift(currentUser);
-            }
-
-            communityMembers = combined;
-        }
-
-        async function renderCommunity() {
+        function renderCommunity() {
             const grid = document.getElementById('communityGrid');
             const nativeFilter = document.getElementById('filterNative').value;
             const targetFilter = document.getElementById('filterTarget').value;
 
-            // Fetch from database/sync
-            await fetchCommunityProfiles();
+            const selfIndex = mockPartners.findIndex(p => p.id === currentUser.id);
+            const selfData = {
+                id: currentUser.id,
+                name: currentUser.name + (currentLang === 'ja' ? ' (あなた)' : ' (You)'),
+                nativeLang: currentUser.nativeLang,
+                targetLang: currentUser.targetLang,
+                location: currentUser.location || (currentLang === 'ja' ? '未設定' : 'Not set'),
+                bio: currentUser.bio || (currentLang === 'ja' ? 'よろしくお願いします！' : 'Hello! Nice to meet you!'),
+                avatar: currentUser.avatar,
+                isSelf: true
+            };
+
+            if (selfIndex >= 0) {
+                mockPartners[selfIndex] = selfData;
+            } else {
+                mockPartners.unshift(selfData);
+            }
 
             grid.innerHTML = '';
 
-            const filtered = communityMembers.filter(partner => {
+            const filtered = mockPartners.filter(partner => {
                 if (nativeFilter !== 'ALL' && partner.nativeLang !== nativeFilter) return false;
                 if (targetFilter !== 'ALL' && partner.targetLang !== targetFilter) return false;
                 return true;
@@ -749,19 +681,19 @@ Let's get started!`;
             }
 
             filtered.forEach(partner => {
-                const isSelf = partner.id === currentUser.id;
+                const isSelf = partner.id === currentUser.id || partner.isSelf;
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-2xl border ${isSelf ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-slate-200'} p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4`;
                 card.innerHTML = `
                     <div class="space-y-4">
                         <div class="flex items-center space-x-4">
-                            <img src="${partner.avatar}" class="w-14 h-14 rounded-full object-cover border-2 border-brand-500/30">
+                            <img src="${partner.avatar}" class="w-14 h-14 rounded-full object-cover border-2 ${isSelf ? 'border-brand-500' : 'border-brand-500/30'}">
                             <div>
                                 <div class="flex items-center space-x-2">
                                     <h3 class="font-bold text-slate-800 text-lg leading-tight">${partner.name}</h3>
                                     ${isSelf ? `<span class="px-2 py-0.5 bg-brand-100 text-brand-700 text-[10px] font-bold rounded-full">${currentLang === 'ja' ? 'あなた' : 'You'}</span>` : ''}
                                 </div>
-                                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>${partner.location || '---'}</p>
+                                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot mr-1"></i>${partner.location}</p>
                             </div>
                         </div>
 
@@ -776,13 +708,13 @@ Let's get started!`;
                         </div>
 
                         <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            "${partner.bio || '...'}"
+                            "${partner.bio}"
                         </p>
                     </div>
 
                     ${isSelf ? `
                         <button onclick="navigateTo('profile')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-pen"></i>
+                            <i class="fa-solid fa-pen-to-square"></i>
                             <span>${currentLang === 'ja' ? 'プロフィールを編集' : 'Edit Profile'}</span>
                         </button>
                     ` : `
@@ -796,9 +728,6 @@ Let's get started!`;
             });
         }
 
-        /**
-         * Chat Functions
-         */
         function startChatWith(partnerId) {
             activeChatPartnerId = partnerId;
             navigateTo('chat');
@@ -840,7 +769,6 @@ Let's get started!`;
             document.getElementById('chatHeaderLang').textContent = `Native: ${partner.nativeLang} | Target: ${partner.targetLang}`;
             document.getElementById('chatHeaderAvatar').src = partner.avatar;
 
-            // Enable inputs
             document.getElementById('chatInput').disabled = false;
             document.getElementById('chatSendBtn').disabled = false;
 
@@ -901,7 +829,6 @@ Let's get started!`;
             input.value = '';
             renderMessages();
 
-            // Simulate automatic friendly reply for interactive demo
             setTimeout(() => {
                 if (chatMessagesData[activeChatPartnerId]) {
                     chatMessagesData[activeChatPartnerId].push({
@@ -926,9 +853,6 @@ Let's get started!`;
             input.focus();
         }
 
-        /**
-         * Background Supabase Database Initialization
-         */
         function initSupabase(url, key) {
             try {
                 if (window.supabase) {
