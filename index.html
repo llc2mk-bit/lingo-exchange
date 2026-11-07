@@ -93,10 +93,6 @@
                     <span id="currentLangLabel">日本語 / English</span>
                 </button>
 
-                <!-- Supabase Settings Toggle -->
-                <button onclick="openSupabaseModal()" title="Supabase DB Settings" class="p-2 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-100 transition">
-                    <i class="fa-solid fa-database"></i>
-                </button>
             </div>
         </div>
     </header>
@@ -174,10 +170,6 @@
                         <h2 class="text-2xl font-bold text-slate-800" data-i18n="profile_title">プロフィール設定</h2>
                         <p class="text-slate-500 text-sm" data-i18n="profile_subtitle">あなたの情報と学習言語を設定しましょう</p>
                     </div>
-                    <span id="dbStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span data-i18n="db_local">ローカル保存中</span>
-                    </span>
                 </div>
 
                 <form id="profileForm" onsubmit="saveProfile(event)" class="space-y-6">
@@ -355,57 +347,16 @@
         </button>
     </nav>
 
-    <!-- SUPABASE DB CONFIG MODAL (Requirement 4) -->
-    <div id="supabaseModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl relative">
-            <button onclick="closeSupabaseModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-database"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-800">Supabase 接続設定</h3>
-                    <p class="text-xs text-slate-500">無料データベース Supabase と同期</p>
-                </div>
-            </div>
-
-            <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
-                SupabaseのURLとAPI Keyを設定すると、実データベースに接続されます。未設定の場合でもブラウザのローカル記憶域（LocalStorage）で全機能をお試しいただけます。
-            </p>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Project URL</label>
-                    <input type="text" id="supabaseUrlInput" value="https://kfluauexqqmdnuyrstlk.supabase.co" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Anon Key</label>
-                    <input type="password" id="supabaseKeyInput" value="sb_publishable_uK9mIhI09mAxFeDYkRRTuA_zScMhx1l" placeholder="eyJh..." class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <button onclick="saveSupabaseConfig()" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl transition">
-                    接続を保存
-                </button>
-                <button onclick="clearSupabaseConfig()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">
-                    クリア
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- APPLICATION JAVASCRIPT LOGIC -->
     <script>
         /**
          * State & Translations Definition
          */
         let currentLang = 'ja'; // 'ja' or 'en'
-        // Default Supabase Credentials
+        // Hardcoded Supabase Credentials for all devices
         const DEFAULT_SUPABASE_URL = 'https://kfluauexqqmdnuyrstlk.supabase.co';
         const DEFAULT_SUPABASE_KEY = 'sb_publishable_uK9mIhI09mAxFeDYkRRTuA_zScMhx1l';
+        let supabaseClient = null;
 
         // Requirement 1 Text (Exact Japanese & English Translation)
         const INTRO_TEXT_JA = `このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
@@ -574,8 +525,8 @@ Let's get started!`;
             document.getElementById('userBio').value = currentUser.bio;
             document.getElementById('avatarPreview').src = currentUser.avatar;
 
-            // Initialize Supabase (with default or user-specified credentials)
-            initSupabaseFromStorage();
+            // Initialize Supabase silently in background
+            initSupabase(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
 
             // Set Initial Language Text
             updateLanguageUI();
@@ -897,58 +848,12 @@ Let's get started!`;
         }
 
         /**
-         * Requirement 4: Supabase Database Integration & Config Modal
+         * Background Supabase Database Initialization
          */
-        function openSupabaseModal() {
-            document.getElementById('supabaseModal').classList.remove('hidden');
-        }
-
-        function closeSupabaseModal() {
-            document.getElementById('supabaseModal').classList.add('hidden');
-        }
-
-        function saveSupabaseConfig() {
-            const url = document.getElementById('supabaseUrlInput').value.trim();
-            const key = document.getElementById('supabaseKeyInput').value.trim();
-
-            if (url && key) {
-                localStorage.setItem('lingo_sb_url', url);
-                localStorage.setItem('lingo_sb_key', key);
-                initSupabase(url, key);
-                alert(currentLang === 'ja' ? 'Supabaseの設定を保存しました！' : 'Supabase configured successfully!');
-            }
-            closeSupabaseModal();
-        }
-
-        function clearSupabaseConfig() {
-            localStorage.removeItem('lingo_sb_url');
-            localStorage.removeItem('lingo_sb_key');
-            document.getElementById('supabaseUrlInput').value = DEFAULT_SUPABASE_URL;
-            document.getElementById('supabaseKeyInput').value = DEFAULT_SUPABASE_KEY;
-            initSupabase(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
-            closeSupabaseModal();
-        }
-
-        function initSupabaseFromStorage() {
-            const url = localStorage.getItem('lingo_sb_url') || DEFAULT_SUPABASE_URL;
-            const key = localStorage.getItem('lingo_sb_key') || DEFAULT_SUPABASE_KEY;
-            
-            document.getElementById('supabaseUrlInput').value = url;
-            document.getElementById('supabaseKeyInput').value = key;
-
-            if (url && key) {
-                initSupabase(url, key);
-            }
-        }
-
         function initSupabase(url, key) {
             try {
                 if (window.supabase) {
                     supabaseClient = window.supabase.createClient(url, key);
-                    document.getElementById('dbStatusBadge').innerHTML = `
-                        <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
-                        <span>${translations[currentLang].db_supabase}</span>
-                    `;
                 }
             } catch (err) {
                 console.error("Supabase init error:", err);
