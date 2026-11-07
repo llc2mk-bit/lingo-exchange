@@ -378,11 +378,11 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Project URL</label>
-                    <input type="text" id="supabaseUrlInput" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                    <input type="text" id="supabaseUrlInput" value="https://kfluauexqqmdnuyrstlk.supabase.co" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Supabase Anon Key</label>
-                    <input type="password" id="supabaseKeyInput" placeholder="eyJh..." class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                    <input type="password" id="supabaseKeyInput" value="sb_publishable_uK9mIhI09mAxFeDYkRRTuA_zScMhx1l" placeholder="eyJh..." class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
                 </div>
             </div>
 
@@ -403,9 +403,9 @@
          * State & Translations Definition
          */
         let currentLang = 'ja'; // 'ja' or 'en'
-        let activeView = 'landing';
-        let supabaseClient = null;
-        let activeChatPartnerId = null;
+        // Default Supabase Credentials
+        const DEFAULT_SUPABASE_URL = 'https://kfluauexqqmdnuyrstlk.supabase.co';
+        const DEFAULT_SUPABASE_KEY = 'sb_publishable_uK9mIhI09mAxFeDYkRRTuA_zScMhx1l';
 
         // Requirement 1 Text (Exact Japanese & English Translation)
         const INTRO_TEXT_JA = `このサイトは日本語を話す人たちと、ビサヤ語を話す人たちが交流を深めるために作られました。
@@ -574,7 +574,7 @@ Let's get started!`;
             document.getElementById('userBio').value = currentUser.bio;
             document.getElementById('avatarPreview').src = currentUser.avatar;
 
-            // Initialize Supabase if config exists
+            // Initialize Supabase (with default or user-specified credentials)
             initSupabaseFromStorage();
 
             // Set Initial Language Text
@@ -923,17 +923,19 @@ Let's get started!`;
         function clearSupabaseConfig() {
             localStorage.removeItem('lingo_sb_url');
             localStorage.removeItem('lingo_sb_key');
-            supabaseClient = null;
-            document.getElementById('dbStatusBadge').innerHTML = `
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>${translations[currentLang].db_local}</span>
-            `;
+            document.getElementById('supabaseUrlInput').value = DEFAULT_SUPABASE_URL;
+            document.getElementById('supabaseKeyInput').value = DEFAULT_SUPABASE_KEY;
+            initSupabase(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
             closeSupabaseModal();
         }
 
         function initSupabaseFromStorage() {
-            const url = localStorage.getItem('lingo_sb_url');
-            const key = localStorage.getItem('lingo_sb_key');
+            const url = localStorage.getItem('lingo_sb_url') || DEFAULT_SUPABASE_URL;
+            const key = localStorage.getItem('lingo_sb_key') || DEFAULT_SUPABASE_KEY;
+            
+            document.getElementById('supabaseUrlInput').value = url;
+            document.getElementById('supabaseKeyInput').value = key;
+
             if (url && key) {
                 initSupabase(url, key);
             }
