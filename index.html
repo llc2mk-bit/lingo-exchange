@@ -395,6 +395,62 @@ Let's get started!`,
 
     let supabaseClient = null;
 
+    // --- DEFAULT SUPABASE CONFIG (AUTOMATIC CONNECT) ---
+    const SUPABASE_URL = "https://oidvvwjnybkkzgrnxvmv.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_0XQVh42kkrXLid646zsuXA_M6Nb4vtz";
+
+    function autoConnectSupabase() {
+      try {
+        if (window.supabase && SUPABASE_URL && SUPABASE_KEY) {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          console.log("Supabase connected automatically.");
+          
+          const statusElem = document.getElementById('sbStatus');
+          if (statusElem) {
+            statusElem.innerText = '✅ Supabaseと自動接続されています';
+            statusElem.className = 'text-xs text-emerald-600 font-medium text-center';
+          }
+          
+          fetchMembersFromSupabase();
+        }
+      } catch (err) {
+        console.error("Supabase connection error:", err);
+      }
+    }
+
+    // Supabaseからメンバー一覧を取得
+    async function fetchMembersFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*');
+          
+        if (error) {
+          console.log('Supabase fetch notice:', error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          // Supabaseのデータをフロント用フォーマットに変換して反映
+          const cloudMembers = data.map(item => ({
+            id: item.id,
+            name: item.name || 'Anonymous',
+            nativeLang: item.native_lang || '日本語',
+            targetLang: item.target_lang || 'ビサヤ語 (Visayan / Cebuano)',
+            bio: item.bio || '',
+            avatarUrl: item.avatar_url || 'https://placehold.co/150x150/0ea5e9/ffffff?text=User'
+          }));
+
+          // 現在のユーザー以外のメンバーを挿入
+          mockMembers = cloudMembers;
+          renderMembers();
+        }
+      } catch (e) {
+        console.log('Supabase fetch exception:', e);
+      }
+    }
+
     // --- UI NAVIGATION ---
     function switchTab(tabId) {
       ['home', 'members', 'profile', 'supabase'].forEach(id => {
@@ -539,8 +595,8 @@ Let's get started!`,
 
     // --- SUPABASE INTEGRATION (REQUIREMENT 4) ---
     function initSupabaseFromUI() {
-      const url = document.getElementById('sbUrl').value.trim();
-      const key = document.getElementById('sbKey').value.trim();
+      const url = document.getElementById('sbUrl').value.trim() || SUPABASE_URL;
+      const key = document.getElementById('sbKey').value.trim() || SUPABASE_KEY;
       const status = document.getElementById('sbStatus');
 
       if (!url || !key) {
@@ -555,6 +611,7 @@ Let's get started!`,
         status.className = 'text-xs text-emerald-600 font-medium text-center';
         showToast('Supabase Client Active');
         syncProfileToSupabase();
+        fetchMembersFromSupabase();
       } catch (err) {
         status.innerText = '接続エラー: ' + err.message;
         status.className = 'text-xs text-red-500 font-medium text-center';
@@ -574,7 +631,11 @@ Let's get started!`,
             bio: currentUser.bio,
             avatar_url: currentUser.avatarUrl
           }]);
-        if (error) console.log('Supabase sync info:', error.message);
+        if (error) {
+          console.log('Supabase sync info:', error.message);
+        } else {
+          fetchMembersFromSupabase();
+        }
       } catch (e) {
         console.log('Supabase operation notice:', e);
       }
@@ -592,6 +653,10 @@ Let's get started!`,
 
     // --- INIT ---
     window.onload = function() {
+      document.getElementById('sbUrl').value = SUPABASE_URL;
+      document.getElementById('sbKey').value = SUPABASE_KEY;
+      
+      autoConnectSupabase();
       populateProfileForm();
       renderMembers();
     };
