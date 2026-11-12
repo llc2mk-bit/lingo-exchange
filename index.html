@@ -218,6 +218,45 @@
     </section>
   </main>
 
+  <!-- MESSAGE MODAL DIALOG -->
+  <div id="messageModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-3">
+          <img id="msgTargetAvatar" src="" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">
+          <div>
+            <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
+              <span id="msgTargetName">Partner Name</span>
+            </h3>
+            <span class="text-xs text-slate-500" data-i18n="msgModalSub">ダイレクトメッセージを送信</span>
+          </div>
+        </div>
+        <button onclick="closeMessageModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Message Form -->
+      <form onsubmit="handleSendMessage(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="msgLabel">メッセージ内容</label>
+          <textarea id="messageContent" rows="4" required class="w-full p-3.5 border border-slate-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="こんにちは！一緒に言語交換をしませんか？"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeMessageModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition" data-i18n="cancelBtn">
+            キャンセル
+          </button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 shadow-md transition flex items-center gap-1.5">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span data-i18n="sendBtn">送信する</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- NOTIFICATION TOAST -->
   <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 flex items-center gap-2 z-50">
     <i class="fa-solid fa-circle-check text-emerald-400"></i>
@@ -225,6 +264,51 @@
   </div>
 
   <script>
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = 'https://oidvvwjnybkkzgrnxvmv.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_0XQVh42kkrXLid646zsuXA_M6Nb4vtz';
+    let supabaseClient = null;
+
+    // Default current user state
+    let currentUser = {
+      id: 'user_local_' + Math.random().toString(36).substr(2, 9),
+      name: 'ゲスト ユーザー',
+      nativeLang: '日本語',
+      targetLang: 'ビサヤ語 (Visayan / Cebuano)',
+      bio: 'はじめまして！日本語を教えることができます。ビサヤ語の日常会話を学びたいです。よろしくお願いします！',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
+    };
+
+    // Default members list
+    let mockMembers = [
+      {
+        id: '1',
+        name: 'Kenji',
+        nativeLang: '日本語',
+        targetLang: 'ビサヤ語 (Visayan / Cebuano)',
+        bio: 'セブ島への旅行をきっかけにビサヤ語を学び始めました！楽しく日常会話を練習したいです。',
+        avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250'
+      },
+      {
+        id: '2',
+        name: 'Maria',
+        nativeLang: 'ビサヤ語',
+        targetLang: '日本語',
+        bio: 'Maayong adlaw! I am a native Cebuano speaker who loves Japanese culture. Let us practice together!',
+        avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250'
+      },
+      {
+        id: '3',
+        name: 'John',
+        nativeLang: '英語',
+        targetLang: '日本語',
+        bio: 'Hi! Learning Japanese and Cebuano. Glad to connect with friends from Japan and Philippines!',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250'
+      }
+    ];
+
+    let currentUILang = 'ja';
+
     // --- TRANSLATION DICTIONARY ---
     const i18n = {
       ja: {
@@ -264,7 +348,11 @@
         labelNative: "母国語 (Native)",
         labelTarget: "学びたい言語 (Learning)",
         labelBio: "自己紹介 / Message",
-        saveBtn: "保存する / Save Profile"
+        saveBtn: "保存する / Save Profile",
+        msgModalSub: "ダイレクトメッセージを送信",
+        msgLabel: "メッセージ内容",
+        cancelBtn: "キャンセル",
+        sendBtn: "送信する"
       },
       en: {
         navHome: "Home",
@@ -303,200 +391,70 @@ Let's get started!`,
         labelNative: "Native Language",
         labelTarget: "Learning Language",
         labelBio: "Bio / Self-Introduction",
-        saveBtn: "Save Profile"
+        saveBtn: "Save Profile",
+        msgModalSub: "Send Direct Message",
+        msgLabel: "Message",
+        cancelBtn: "Cancel",
+        sendBtn: "Send"
       }
     };
 
-    let currentUILang = 'ja';
+    let activeMessagePartner = null;
 
-    // Current User State
-    let currentUser = {
-      id: 'usr_' + Math.random().toString(36).substr(2, 9),
-      name: 'ゲストユーザー (Guest)',
-      nativeLang: '日本語',
-      targetLang: 'ビサヤ語 (Visayan / Cebuano)',
-      bio: 'こんにちは！ビサヤ語を楽しく勉強したいです！よろしくお願いします。',
-      avatarUrl: 'https://placehold.co/150x150/0ea5e9/ffffff?text=Me'
-    };
-
-    // Sample Members Data
-    let mockMembers = [
-      {
-        id: '1',
-        name: 'Maria Santos',
-        nativeLang: 'ビサヤ語',
-        targetLang: '日本語',
-        bio: 'Maayong adlaw! I live in Cebu and I love Japanese food and anime.',
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-      },
-      {
-        id: '2',
-        name: 'Kenji Sato',
-        nativeLang: '日本語',
-        targetLang: 'ビサヤ語 (Visayan / Cebuano)',
-        bio: 'フィリピンのセブ島が大好きです！日常ビサヤ語会話を教えてください。',
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-      },
-      {
-        id: '3',
-        name: 'Grace Flores',
-        nativeLang: '英語',
-        targetLang: '日本語',
-        bio: 'Learning Japanese vocabulary every day. Let us exchange languages!',
-        avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
-      },
-      {
-        id: '4',
-        name: 'Taro Yamada',
-        nativeLang: '日本語',
-        targetLang: 'ビサヤ語 (Visayan / Cebuano)',
-        bio: 'ダバオに旅行に行く予定です。美味しいフルーツの話をしましょう！',
-        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
-      }
-    ];
-
-    let supabaseClient = null;
-
-    // --- DEFAULT SUPABASE CONFIG (AUTOMATIC CONNECT) ---
-    const SUPABASE_URL = "https://oidvvwjnybkkzgrnxvmv.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_0XQVh42kkrXLid646zsuXA_M6Nb4vtz";
-
-    function autoConnectSupabase() {
-      try {
-        if (window.supabase && SUPABASE_URL && SUPABASE_KEY) {
-          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-          console.log("Supabase connected automatically.");
-          
-          const statusElem = document.getElementById('sbStatus');
-          if (statusElem) {
-            statusElem.innerText = '✅ Supabaseと自動接続されています';
-            statusElem.className = 'text-xs text-emerald-600 font-medium text-center';
-          }
-          
-          fetchMembersFromSupabase();
-        }
-      } catch (err) {
-        console.error("Supabase connection error:", err);
-      }
-    }
-
-    // Supabaseからメンバー一覧を取得
-    async function fetchMembersFromSupabase() {
-      if (!supabaseClient) return;
-      try {
-        const { data, error } = await supabaseClient
-          .from('profiles')
-          .select('*');
-          
-        if (error) {
-          console.log('Supabase fetch notice:', error.message);
-          return;
-        }
-
-        if (data && data.length > 0) {
-          // Supabaseのデータをフロント用フォーマットに変換して反映
-          const cloudMembers = data.map(item => ({
-            id: item.id,
-            name: item.name || 'Anonymous',
-            nativeLang: item.native_lang || '日本語',
-            targetLang: item.target_lang || 'ビサヤ語 (Visayan / Cebuano)',
-            bio: item.bio || '',
-            avatarUrl: item.avatar_url || 'https://placehold.co/150x150/0ea5e9/ffffff?text=User'
-          }));
-
-          // 現在のユーザー以外のメンバーを挿入
-          mockMembers = cloudMembers;
-          renderMembers();
-        }
-      } catch (e) {
-        console.log('Supabase fetch exception:', e);
-      }
-    }
-
-    // --- UI NAVIGATION ---
+    // --- TAB SWITCHING ---
     function switchTab(tabId) {
       ['home', 'members', 'profile'].forEach(id => {
         const sec = document.getElementById(`section-${id}`);
         const btn = document.getElementById(`tabBtn-${id}`);
-        if (id === tabId) {
-          sec.classList.remove('hidden');
-          if (btn) {
-            btn.classList.add('border-blue-600', 'text-blue-600', 'font-semibold');
-            btn.classList.remove('border-transparent', 'text-slate-500');
-          }
-        } else {
-          sec.classList.add('hidden');
-          if (btn) {
-            btn.classList.remove('border-blue-600', 'text-blue-600', 'font-semibold');
-            btn.classList.add('border-transparent', 'text-slate-500');
-          }
+        if (sec) sec.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('border-blue-600', 'text-blue-600', 'font-semibold');
+          btn.classList.add('border-transparent', 'text-slate-500');
         }
       });
-      if (tabId === 'members') renderMembers();
+
+      const activeSec = document.getElementById(`section-${tabId}`);
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-500');
+        activeBtn.classList.add('border-blue-600', 'text-blue-600', 'font-semibold');
+      }
     }
 
-    // --- BILINGUAL UI TOGGLE ---
+    // --- UI LANGUAGE TOGGLE ---
     function toggleUILanguage() {
       currentUILang = currentUILang === 'ja' ? 'en' : 'ja';
       document.getElementById('uiLangLabel').innerText = currentUILang === 'ja' ? 'English' : '日本語';
       
-      // Update DOM Elements
-      document.querySelectorAll('[data-i18n]').forEach(elem => {
-        const key = elem.getAttribute('data-i18n');
-        if (i18n[currentUILang][key]) {
-          elem.innerText = i18n[currentUILang][key];
+      const elements = document.querySelectorAll('[data-i18n]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[currentUILang] && i18n[currentUILang][key]) {
+          el.innerText = i18n[currentUILang][key];
         }
       });
 
       renderMembers();
     }
 
-    // --- IMAGE UPLOAD HANDLING (REQUIREMENT 3) ---
+    // --- AVATAR UPLOAD ---
     function handleAvatarUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      if (!file.type.startsWith('image/')) {
-        showToast('画像ファイル(JPEG, PNG)を選択してください。');
-        return;
-      }
-
       const reader = new FileReader();
       reader.onload = function(e) {
-        const base64Url = e.target.result;
-        // Immediate Avatar Preview Update
-        currentUser.avatarUrl = base64Url;
-        document.getElementById('profileAvatarPreview').src = base64Url;
-        document.getElementById('navAvatarImg').src = base64Url;
-        showToast(currentUILang === 'ja' ? 'アイコン画像がアップロードされました！' : 'Icon updated successfully!');
+        const base64Image = e.target.result;
+        currentUser.avatarUrl = base64Image;
+        document.getElementById('profileAvatarPreview').src = base64Image;
+        document.getElementById('navAvatarImg').src = base64Image;
+        showToast(currentUILang === 'ja' ? '画像を切り替えました' : 'Avatar updated');
       };
       reader.readAsDataURL(file);
     }
 
-    // --- PROFILE SAVE & STATE ---
-    function saveProfile(event) {
-      event.preventDefault();
-      currentUser.name = document.getElementById('profName').value;
-      currentUser.nativeLang = document.getElementById('profNative').value;
-      currentUser.targetLang = document.getElementById('profTarget').value;
-      currentUser.bio = document.getElementById('profBio').value;
-
-      showToast(currentUILang === 'ja' ? 'プロフィールを保存しました。' : 'Profile saved successfully!');
-      
-      // Sync to Supabase if connected
-      if (supabaseClient) {
-        syncProfileToSupabase();
-      }
-
-      // Automatically add or update user in members list
-      const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
-      if (existingIdx >= 0) {
-        mockMembers[existingIdx] = { ...currentUser };
-      } else {
-        mockMembers.unshift({ ...currentUser });
-      }
-    }
-
+    // --- PROFILE MANAGEMENT ---
     function populateProfileForm() {
       document.getElementById('profName').value = currentUser.name;
       document.getElementById('profNative').value = currentUser.nativeLang;
@@ -506,11 +464,59 @@ Let's get started!`,
       document.getElementById('navAvatarImg').src = currentUser.avatarUrl;
     }
 
+    function saveProfile(event) {
+      event.preventDefault();
+      currentUser.name = document.getElementById('profName').value;
+      currentUser.nativeLang = document.getElementById('profNative').value;
+      currentUser.targetLang = document.getElementById('profTarget').value;
+      currentUser.bio = document.getElementById('profBio').value;
+
+      showToast(currentUILang === 'ja' ? 'プロフィールを保存しました' : 'Profile saved successfully');
+      syncProfileToSupabase();
+      renderMembers();
+    }
+
+    // --- MESSAGE MODAL FUNCTIONS ---
+    function openMessageModal(memberId) {
+      const member = mockMembers.find(m => m.id === memberId);
+      if (!member) return;
+
+      activeMessagePartner = member;
+      document.getElementById('msgTargetName').innerText = member.name;
+      document.getElementById('msgTargetAvatar').src = member.avatarUrl;
+      document.getElementById('messageContent').value = '';
+      
+      const modal = document.getElementById('messageModal');
+      modal.classList.remove('hidden');
+    }
+
+    function closeMessageModal() {
+      const modal = document.getElementById('messageModal');
+      modal.classList.add('hidden');
+      activeMessagePartner = null;
+    }
+
+    function handleSendMessage(event) {
+      event.preventDefault();
+      const content = document.getElementById('messageContent').value.trim();
+      if (!content || !activeMessagePartner) return;
+
+      const recipientName = activeMessagePartner.name;
+      closeMessageModal();
+
+      const successMsg = currentUILang === 'ja'
+        ? `${recipientName} さんへメッセージを送信しました！`
+        : `Message sent to ${recipientName}!`;
+      showToast(successMsg);
+    }
+
     // --- RENDER MEMBERS ---
     function renderMembers() {
       const grid = document.getElementById('membersGrid');
-      const filterNative = document.getElementById('filterNative').value;
-      const filterTarget = document.getElementById('filterTarget').value;
+      if (!grid) return;
+
+      const filterNative = document.getElementById('filterNative')?.value || 'ALL';
+      const filterTarget = document.getElementById('filterTarget')?.value || 'ALL';
 
       const filtered = mockMembers.filter(m => {
         const matchNative = filterNative === 'ALL' || m.nativeLang === filterNative;
@@ -531,18 +537,18 @@ Let's get started!`,
         card.innerHTML = `
           <div class="space-y-4">
             <div class="flex items-center gap-3">
-              <img src="${m.avatarUrl}" class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/100x100/3b82f6/ffffff?text=User'">
+              <img src="${m.avatarUrl}" class="w-12 h-12 rounded-full object-cover border border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/100x100/3b82f6/ffffff?text=${encodeURIComponent(m.name)}'">
               <div>
                 <h4 class="font-bold text-slate-800">${m.name}</h4>
                 <div class="flex flex-wrap gap-1 mt-0.5">
-                  <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded-md border border-blue-100">母国語: ${m.nativeLang}</span>
-                  <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-md border border-emerald-100">学習中: ${m.targetLang}</span>
+                  <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded-md border border-blue-100">母国語: ${m.nativeLang || '未設定'}</span>
+                  <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-semibold rounded-md border border-emerald-100">学習中: ${m.targetLang || '未設定'}</span>
                 </div>
               </div>
             </div>
-            <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed">${m.bio}</p>
+            <p class="text-xs text-slate-600 line-clamp-3 leading-relaxed">${m.bio || ''}</p>
           </div>
-          <button onclick="showToast('${m.name} へメッセージを送信しました')" class="mt-4 w-full py-2 border border-blue-600 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-600 hover:text-white transition flex items-center justify-center gap-1.5">
+          <button onclick="openMessageModal('${m.id}')" class="mt-4 w-full py-2 border border-blue-600 text-blue-600 font-semibold text-xs rounded-xl hover:bg-blue-600 hover:text-white transition flex items-center justify-center gap-1.5">
             <i class="fa-regular fa-paper-plane"></i>
             <span>Message</span>
           </button>
@@ -555,35 +561,55 @@ Let's get started!`,
       renderMembers();
     }
 
-    // --- SUPABASE INTEGRATION (REQUIREMENT 4) ---
-    function initSupabaseFromUI() {
-      const url = document.getElementById('sbUrl').value.trim() || SUPABASE_URL;
-      const key = document.getElementById('sbKey').value.trim() || SUPABASE_KEY;
-      const status = document.getElementById('sbStatus');
-
-      if (!url || !key) {
-        status.innerText = 'URLとKeyを入力してください。';
-        status.className = 'text-xs text-red-500 font-medium text-center';
-        return;
-      }
-
+    // --- SUPABASE INTEGRATION & AUTOMATIC SYNC ---
+    function autoConnectSupabase() {
       try {
-        supabaseClient = supabase.createClient(url, key);
-        status.innerText = '✅ Supabaseと正常に接続されました！';
-        status.className = 'text-xs text-emerald-600 font-medium text-center';
-        showToast('Supabase Client Active');
-        syncProfileToSupabase();
-        fetchMembersFromSupabase();
+        if (typeof supabase !== 'undefined' && SUPABASE_URL && SUPABASE_KEY) {
+          supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          fetchMembersFromSupabase();
+        }
       } catch (err) {
-        status.innerText = '接続エラー: ' + err.message;
-        status.className = 'text-xs text-red-500 font-medium text-center';
+        console.warn('Supabase initialization warning:', err.message);
+      }
+    }
+
+    async function fetchMembersFromSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*');
+
+        if (error) {
+          console.warn('Supabase fetch error:', error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const remoteMembers = data.map(item => ({
+            id: item.id,
+            name: item.name || 'Member',
+            nativeLang: item.native_lang || '未設定',
+            targetLang: item.target_lang || '未設定',
+            bio: item.bio || '',
+            avatarUrl: item.avatar_url || 'https://placehold.co/100x100/3b82f6/ffffff?text=User'
+          }));
+
+          // Merge local mock data and remote profiles avoiding duplicates
+          const existingIds = new Set(remoteMembers.map(m => m.id));
+          const uniqueMocks = mockMembers.filter(m => !existingIds.has(m.id));
+          mockMembers = [...remoteMembers, ...uniqueMocks];
+          renderMembers();
+        }
+      } catch (e) {
+        console.warn('Supabase fetch notice:', e);
       }
     }
 
     async function syncProfileToSupabase() {
       if (!supabaseClient) return;
       try {
-        const { data, error } = await supabaseClient
+        const { error } = await supabaseClient
           .from('profiles')
           .upsert([{
             id: currentUser.id,
@@ -593,19 +619,21 @@ Let's get started!`,
             bio: currentUser.bio,
             avatar_url: currentUser.avatarUrl
           }]);
+
         if (error) {
-          console.log('Supabase sync info:', error.message);
+          console.warn('Supabase sync warning:', error.message);
         } else {
           fetchMembersFromSupabase();
         }
       } catch (e) {
-        console.log('Supabase operation notice:', e);
+        console.warn('Supabase sync notice:', e);
       }
     }
 
     // --- TOAST NOTIFICATION ---
     function showToast(msg) {
       const toast = document.getElementById('toast');
+      if (!toast) return;
       document.getElementById('toastMsg').innerText = msg;
       toast.classList.remove('translate-y-20', 'opacity-0');
       setTimeout(() => {
