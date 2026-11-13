@@ -494,7 +494,7 @@ Let's get started!`,
       currentUser.bio = document.getElementById('profBio')?.value || currentUser.bio;
 
       // Update local members list with current user
-      const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
+      const existingIdx = mockMembers.findIndex(m => String(m.id) === String(currentUser.id));
       if (existingIdx >= 0) {
         mockMembers[existingIdx] = { ...currentUser };
       } else {
@@ -510,7 +510,10 @@ Let's get started!`,
     // --- MESSAGE MODAL FUNCTIONS & HISTORICAL CHAT RENDER ---
     function openMessageModal(memberId) {
       const member = mockMembers.find(m => String(m.id) === String(memberId));
-      if (!member) return;
+      if (!member) {
+        console.warn('Member not found for id:', memberId);
+        return;
+      }
 
       activeMessagePartner = member;
       const targetNameEl = document.getElementById('msgTargetName');
@@ -589,7 +592,7 @@ Let's get started!`,
       // Save to chat state
       chatMessages.push({
         id: 'msg_' + Date.now(),
-        partnerId: activeMessagePartner.id,
+        partnerId: String(activeMessagePartner.id),
         sender: 'me',
         text: content,
         timestamp: timeStr
@@ -678,7 +681,7 @@ Let's get started!`,
 
         if (data && data.length > 0) {
           const remoteMembers = data.map(item => ({
-            id: item.id,
+            id: String(item.id),
             name: item.name || 'Member',
             nativeLang: item.native_lang || '未設定',
             targetLang: item.target_lang || '未設定',
@@ -687,8 +690,8 @@ Let's get started!`,
           }));
 
           // Merge local mock data and remote profiles avoiding duplicates
-          const existingIds = new Set(remoteMembers.map(m => m.id));
-          const uniqueMocks = mockMembers.filter(m => !existingIds.has(m.id));
+          const existingIds = new Set(remoteMembers.map(m => String(m.id)));
+          const uniqueMocks = mockMembers.filter(m => !existingIds.has(String(m.id)));
           mockMembers = [...remoteMembers, ...uniqueMocks];
           renderMembers();
         }
