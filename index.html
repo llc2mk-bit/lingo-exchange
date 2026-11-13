@@ -46,13 +46,13 @@
         </button>
 
         <button onclick="switchTab('profile')" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition relative" title="Profile">
-          <div class="w-8 h-8 rounded-full overflow-hidden border border-blue-500 shadow-sm" id="navAvatarContainer">
-            <img id="navAvatarImg" src="https://placehold.co/100x100/3b82f6/ffffff?text=User" class="w-full h-full object-cover">
-          </div>
-        </button>
-      </div>
+        <div class="w-8 h-8 rounded-full overflow-hidden border border-blue-500 shadow-sm" id="navAvatarContainer">
+          <img id="navAvatarImg" src="https://placehold.co/100x100/3b82f6/ffffff?text=User" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/3b82f6/ffffff?text=User'">
+        </div>
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
   <!-- MAIN CONTAINER -->
   <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6">
@@ -219,7 +219,7 @@
 </main>
 
   <!-- MESSAGE MODAL DIALOG WITH HISTORICAL CHAT -->
-  <div id="messageModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="messageModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="if(event.target===this)closeMessageModal()">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
       <!-- Modal Header -->
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -238,7 +238,7 @@
       </div>
 
       <!-- Chat History Container -->
-      <div id="chatHistory" class="max-h-64 min-h-[120px] overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col">
+      <div id="chatHistory" class="max-h-64 min-h-[140px] overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col">
         <!-- Messages will be rendered here dynamically -->
       </div>
 
@@ -255,7 +255,7 @@
   </div>
 
   <!-- NOTIFICATION TOAST -->
-  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 flex items-center gap-2 z-50">
+  <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white text-xs px-4 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 flex items-center gap-2 z-50 pointer-events-none">
     <i class="fa-solid fa-circle-check text-emerald-400"></i>
     <span id="toastMsg">プロファイルが更新されました</span>
   </div>
@@ -509,25 +509,33 @@ Let's get started!`,
 
     // --- MESSAGE MODAL FUNCTIONS & HISTORICAL CHAT RENDER ---
     function openMessageModal(memberId) {
-      const member = mockMembers.find(m => String(m.id) === String(memberId));
-      if (!member) {
-        console.warn('Member not found for id:', memberId);
-        return;
+      try {
+        const member = mockMembers.find(m => String(m.id) === String(memberId));
+        if (!member) {
+          console.warn('Member not found for id:', memberId);
+          return;
+        }
+
+        activeMessagePartner = member;
+        const targetNameEl = document.getElementById('msgTargetName');
+        const targetAvatarEl = document.getElementById('msgTargetAvatar');
+        const msgContentEl = document.getElementById('messageContent');
+
+        if (targetNameEl) targetNameEl.innerText = member.name || 'Partner';
+        if (targetAvatarEl) {
+          targetAvatarEl.src = member.avatarUrl || 'https://placehold.co/100x100/3b82f6/ffffff?text=User';
+        }
+        if (msgContentEl) msgContentEl.value = '';
+        
+        renderChatHistory(member.id);
+
+        const modal = document.getElementById('messageModal');
+        if (modal) {
+          modal.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Error opening message modal:', err);
       }
-
-      activeMessagePartner = member;
-      const targetNameEl = document.getElementById('msgTargetName');
-      const targetAvatarEl = document.getElementById('msgTargetAvatar');
-      const msgContentEl = document.getElementById('messageContent');
-
-      if (targetNameEl) targetNameEl.innerText = member.name || 'Partner';
-      if (targetAvatarEl) targetAvatarEl.src = member.avatarUrl || 'https://placehold.co/100x100/3b82f6/ffffff?text=User';
-      if (msgContentEl) msgContentEl.value = '';
-      
-      renderChatHistory(member.id);
-
-      const modal = document.getElementById('messageModal');
-      if (modal) modal.classList.remove('hidden');
     }
 
     function renderChatHistory(partnerId) {
@@ -539,7 +547,7 @@ Let's get started!`,
 
       if (filteredMessages.length === 0) {
         chatContainer.innerHTML = `
-          <div class="py-6 text-center text-slate-400 text-xs my-auto">
+          <div class="py-8 text-center text-slate-400 text-xs my-auto">
             まだメッセージはありません。<br>挨拶を送ってみましょう！
           </div>
         `;
@@ -569,7 +577,9 @@ Let's get started!`,
       });
 
       // Auto scroll to bottom
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 50);
     }
 
     function closeMessageModal() {
