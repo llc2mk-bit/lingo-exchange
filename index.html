@@ -221,15 +221,18 @@
   <!-- MESSAGE MODAL DIALOG -->
   <div id="messageModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
+  <!-- MESSAGE MODAL DIALOG WITH HISTORICAL CHAT -->
+  <div id="messageModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in fade-in zoom-in duration-200">
       <!-- Modal Header -->
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
         <div class="flex items-center gap-3">
-          <img id="msgTargetAvatar" src="" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm">
+          <img id="msgTargetAvatar" src="" class="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-sm" onerror="this.src='https://placehold.co/100x100/3b82f6/ffffff?text=User'">
           <div>
             <h3 class="font-bold text-slate-800 text-base flex items-center gap-1.5">
               <span id="msgTargetName">Partner Name</span>
             </h3>
-            <span class="text-xs text-slate-500" data-i18n="msgModalSub">ダイレクトメッセージを送信</span>
+            <span class="text-xs text-slate-500" data-i18n="msgModalSub">チャット履歴と新規メッセージ</span>
           </div>
         </div>
         <button onclick="closeMessageModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition">
@@ -237,20 +240,17 @@
         </button>
       </div>
 
-      <!-- Message Form -->
-      <form onsubmit="handleSendMessage(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" data-i18n="msgLabel">メッセージ内容</label>
-          <textarea id="messageContent" rows="4" required class="w-full p-3.5 border border-slate-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="こんにちは！一緒に言語交換をしませんか？"></textarea>
-        </div>
+      <!-- Chat History Container -->
+      <div id="chatHistory" class="max-h-64 overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col">
+        <!-- Messages will be rendered here dynamically -->
+      </div>
 
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="closeMessageModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition" data-i18n="cancelBtn">
-            キャンセル
-          </button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 shadow-md transition flex items-center gap-1.5">
-            <i class="fa-solid fa-paper-plane"></i>
-            <span data-i18n="sendBtn">送信する</span>
+      <!-- Message Form -->
+      <form onsubmit="handleSendMessage(event)" class="space-y-3">
+        <div class="relative flex items-center">
+          <textarea id="messageContent" rows="2" required class="w-full p-3 pr-12 border border-slate-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="メッセージを入力..."></textarea>
+          <button type="submit" class="absolute right-2.5 p-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center">
+            <i class="fa-solid fa-paper-plane text-xs"></i>
           </button>
         </div>
       </form>
@@ -309,6 +309,31 @@
 
     let currentUILang = 'ja';
 
+    // In-memory chat messages state
+    let chatMessages = [
+      {
+        id: 'msg1',
+        partnerId: '1',
+        sender: 'partner',
+        text: 'こんにちは！ビサヤ語の練習をはじめましょうか？',
+        timestamp: '10:15'
+      },
+      {
+        id: 'msg2',
+        partnerId: '1',
+        sender: 'me',
+        text: 'はい！よろしくお願いします。Maayong buntag!',
+        timestamp: '10:17'
+      },
+      {
+        id: 'msg3',
+        partnerId: '2',
+        sender: 'partner',
+        text: 'Maayong adlaw! Do you have any questions about Cebuano?',
+        timestamp: '09:30'
+      }
+    ];
+
     // --- TRANSLATION DICTIONARY ---
     const i18n = {
       ja: {
@@ -349,10 +374,10 @@
         labelTarget: "学びたい言語 (Learning)",
         labelBio: "自己紹介 / Message",
         saveBtn: "保存する / Save Profile",
-        msgModalSub: "ダイレクトメッセージを送信",
+        msgModalSub: "チャット履歴と新規メッセージ",
         msgLabel: "メッセージ内容",
         cancelBtn: "キャンセル",
-        sendBtn: "送信する"
+        sendBtn: "送信"
       },
       en: {
         navHome: "Home",
@@ -392,91 +417,100 @@ Let's get started!`,
         labelTarget: "Learning Language",
         labelBio: "Bio / Self-Introduction",
         saveBtn: "Save Profile",
-        msgModalSub: "Send Direct Message",
+        msgModalSub: "Chat History & Direct Message",
         msgLabel: "Message",
         cancelBtn: "Cancel",
         sendBtn: "Send"
       }
     };
 
-    let activeMessagePartner = null;
-
-    // --- TAB SWITCHING ---
+    // --- NAVIGATION & UI TOGGLES ---
     function switchTab(tabId) {
       ['home', 'members', 'profile'].forEach(id => {
         const sec = document.getElementById(`section-${id}`);
         const btn = document.getElementById(`tabBtn-${id}`);
-        if (sec) sec.classList.add('hidden');
+        if (sec) sec.classList.toggle('hidden', id !== tabId);
         if (btn) {
-          btn.classList.remove('border-blue-600', 'text-blue-600', 'font-semibold');
-          btn.classList.add('border-transparent', 'text-slate-500');
+          btn.classList.toggle('border-blue-600', id === tabId);
+          btn.classList.toggle('text-blue-600', id === tabId);
+          btn.classList.toggle('font-semibold', id === tabId);
+          btn.classList.toggle('border-transparent', id !== tabId);
+          btn.classList.toggle('text-slate-500', id !== tabId);
         }
       });
-
-      const activeSec = document.getElementById(`section-${tabId}`);
-      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      if (activeSec) activeSec.classList.remove('hidden');
-      if (activeBtn) {
-        activeBtn.classList.remove('border-transparent', 'text-slate-500');
-        activeBtn.classList.add('border-blue-600', 'text-blue-600', 'font-semibold');
-      }
+      if (tabId === 'members') renderMembers();
     }
 
-    // --- UI LANGUAGE TOGGLE ---
     function toggleUILanguage() {
       currentUILang = currentUILang === 'ja' ? 'en' : 'ja';
-      document.getElementById('uiLangLabel').innerText = currentUILang === 'ja' ? 'English' : '日本語';
-      
-      const elements = document.querySelectorAll('[data-i18n]');
-      elements.forEach(el => {
+      const label = document.getElementById('uiLangLabel');
+      if (label) label.innerText = currentUILang === 'ja' ? 'English' : '日本語';
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (i18n[currentUILang] && i18n[currentUILang][key]) {
           el.innerText = i18n[currentUILang][key];
         }
       });
-
       renderMembers();
     }
 
-    // --- AVATAR UPLOAD ---
+    // --- PROFILE & AVATAR HANDLERS ---
+    function populateProfileForm() {
+      const nameInput = document.getElementById('profName');
+      const nativeInput = document.getElementById('profNative');
+      const targetInput = document.getElementById('profTarget');
+      const bioInput = document.getElementById('profBio');
+      const previewImg = document.getElementById('profileAvatarPreview');
+      const navImg = document.getElementById('navAvatarImg');
+
+      if (nameInput) nameInput.value = currentUser.name;
+      if (nativeInput) nativeInput.value = currentUser.nativeLang;
+      if (targetInput) targetInput.value = currentUser.targetLang;
+      if (bioInput) bioInput.value = currentUser.bio;
+      if (previewImg) previewImg.src = currentUser.avatarUrl;
+      if (navImg) navImg.src = currentUser.avatarUrl;
+    }
+
     function handleAvatarUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        const base64Image = e.target.result;
-        currentUser.avatarUrl = base64Image;
-        document.getElementById('profileAvatarPreview').src = base64Image;
-        document.getElementById('navAvatarImg').src = base64Image;
-        showToast(currentUILang === 'ja' ? '画像を切り替えました' : 'Avatar updated');
+        const imageUrl = e.target.result;
+        currentUser.avatarUrl = imageUrl;
+        const previewImg = document.getElementById('profileAvatarPreview');
+        const navImg = document.getElementById('navAvatarImg');
+        if (previewImg) previewImg.src = imageUrl;
+        if (navImg) navImg.src = imageUrl;
+        showToast(currentUILang === 'ja' ? 'アイコンを変更しました' : 'Avatar updated');
       };
       reader.readAsDataURL(file);
     }
 
-    // --- PROFILE MANAGEMENT ---
-    function populateProfileForm() {
-      document.getElementById('profName').value = currentUser.name;
-      document.getElementById('profNative').value = currentUser.nativeLang;
-      document.getElementById('profTarget').value = currentUser.targetLang;
-      document.getElementById('profBio').value = currentUser.bio;
-      document.getElementById('profileAvatarPreview').src = currentUser.avatarUrl;
-      document.getElementById('navAvatarImg').src = currentUser.avatarUrl;
-    }
-
     function saveProfile(event) {
       event.preventDefault();
-      currentUser.name = document.getElementById('profName').value;
-      currentUser.nativeLang = document.getElementById('profNative').value;
-      currentUser.targetLang = document.getElementById('profTarget').value;
-      currentUser.bio = document.getElementById('profBio').value;
+      currentUser.name = document.getElementById('profName')?.value || currentUser.name;
+      currentUser.nativeLang = document.getElementById('profNative')?.value || currentUser.nativeLang;
+      currentUser.targetLang = document.getElementById('profTarget')?.value || currentUser.targetLang;
+      currentUser.bio = document.getElementById('profBio')?.value || currentUser.bio;
 
-      showToast(currentUILang === 'ja' ? 'プロフィールを保存しました' : 'Profile saved successfully');
+      // Update local members list with current user
+      const existingIdx = mockMembers.findIndex(m => m.id === currentUser.id);
+      if (existingIdx >= 0) {
+        mockMembers[existingIdx] = { ...currentUser };
+      } else {
+        mockMembers.unshift({ ...currentUser });
+      }
+
       syncProfileToSupabase();
-      renderMembers();
+      showToast(currentUILang === 'ja' ? 'プロフィールを保存しました' : 'Profile saved');
     }
 
-    // --- MESSAGE MODAL FUNCTIONS ---
+    let activeMessagePartner = null;
+
+    // --- MESSAGE MODAL FUNCTIONS & HISTORICAL CHAT RENDER ---
     function openMessageModal(memberId) {
       const member = mockMembers.find(m => m.id === memberId);
       if (!member) return;
@@ -486,8 +520,52 @@ Let's get started!`,
       document.getElementById('msgTargetAvatar').src = member.avatarUrl;
       document.getElementById('messageContent').value = '';
       
+      renderChatHistory(member.id);
+
       const modal = document.getElementById('messageModal');
       modal.classList.remove('hidden');
+    }
+
+    function renderChatHistory(partnerId) {
+      const chatContainer = document.getElementById('chatHistory');
+      if (!chatContainer) return;
+
+      const filteredMessages = chatMessages.filter(msg => msg.partnerId === partnerId);
+      chatContainer.innerHTML = '';
+
+      if (filteredMessages.length === 0) {
+        chatContainer.innerHTML = `
+          <div class="py-6 text-center text-slate-400 text-xs">
+            まだメッセージはありません。<br>挨拶を送ってみましょう！
+          </div>
+        `;
+        return;
+      }
+
+      filteredMessages.forEach(msg => {
+        const isMe = msg.sender === 'me';
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+
+        const bubble = document.createElement('div');
+        bubble.className = `max-w-[80%] px-3.5 py-2 rounded-2xl text-xs leading-relaxed shadow-sm ${
+          isMe 
+            ? 'bg-blue-600 text-white rounded-br-none' 
+            : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
+        }`;
+        bubble.innerText = msg.text;
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'text-[9px] text-slate-400 mt-1 px-1';
+        timeSpan.innerText = msg.timestamp || '';
+
+        msgDiv.appendChild(bubble);
+        msgDiv.appendChild(timeSpan);
+        chatContainer.appendChild(msgDiv);
+      });
+
+      // Auto scroll to bottom
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     function closeMessageModal() {
@@ -498,16 +576,26 @@ Let's get started!`,
 
     function handleSendMessage(event) {
       event.preventDefault();
-      const content = document.getElementById('messageContent').value.trim();
+      const inputEl = document.getElementById('messageContent');
+      const content = inputEl.value.trim();
       if (!content || !activeMessagePartner) return;
 
-      const recipientName = activeMessagePartner.name;
-      closeMessageModal();
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-      const successMsg = currentUILang === 'ja'
-        ? `${recipientName} さんへメッセージを送信しました！`
-        : `Message sent to ${recipientName}!`;
-      showToast(successMsg);
+      // Save to chat state
+      chatMessages.push({
+        id: 'msg_' + Date.now(),
+        partnerId: activeMessagePartner.id,
+        sender: 'me',
+        text: content,
+        timestamp: timeStr
+      });
+
+      inputEl.value = '';
+      renderChatHistory(activeMessagePartner.id);
+
+      showToast(currentUILang === 'ja' ? 'メッセージを送信しました' : 'Message sent');
     }
 
     // --- RENDER MEMBERS ---
