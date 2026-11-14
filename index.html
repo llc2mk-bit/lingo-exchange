@@ -587,6 +587,14 @@
             currentUser.location = document.getElementById('userLocationInput').value.trim();
             currentUser.bio = document.getElementById('userBioInput').value.trim();
 
+            // 自分のプロフィールをパートナー一覧（メンバー表示）にも追加/更新する
+            const existingIndex = partners.findIndex(p => p.id === currentUser.id);
+            if (existingIndex !== -1) {
+                partners[existingIndex] = { ...currentUser };
+            } else {
+                partners.unshift({ ...currentUser });
+            }
+
             saveLocalData();
             showToast('プロフィールを更新しました！');
             switchTab('partners');
