@@ -62,16 +62,16 @@
 
             <!-- ナビゲーション & 言語切り替え -->
             <div class="flex items-center gap-2 sm:gap-4">
-                <!-- パートナー一覧ボタン -->
-                <button onclick="navigateTo('partners')" id="nav-partners-btn" class="hidden text-sm font-medium text-slate-600 hover:text-teal-600 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5">
-                    <i data-lucide="users" class="w-4 h-4"></i>
+                <!-- パートナー一覧ボタン（常に表示） -->
+                <button onclick="navigateTo('partners')" id="nav-partners-btn" class="text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                    <i data-lucide="users" class="w-4 h-4 text-teal-600"></i>
                     <span data-i18n="nav_partners">パートナーを探す</span>
                 </button>
 
-                <!-- マイプロフィール編集ボタン -->
-                <button onclick="openProfileModal()" id="nav-profile-btn" class="hidden text-sm font-medium text-slate-600 hover:text-teal-600 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5">
+                <!-- マイプロフィール編集ボタン（常に表示） -->
+                <button onclick="openProfileModal()" id="nav-profile-btn" class="text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5">
                     <img id="header-avatar" src="https://placehold.co/100x100/e2e8f0/64748b?text=User" alt="Avatar" class="w-6 h-6 rounded-full object-cover border border-slate-300">
-                    <span class="hidden md:inline" data-i18n="nav_profile">プロフィール編集</span>
+                    <span class="hidden sm:inline" data-i18n="nav_profile">プロフィール編集</span>
                 </button>
 
                 <!-- 日英バイリンガル切り替えスイッチ -->
@@ -198,9 +198,12 @@
                         <p id="my-banner-langs" class="text-sm text-slate-600 mt-1">
                             母国語: 日本語 / 学習中: ビサヤ語
                         </p>
+                        <p id="my-banner-bio" class="text-xs text-slate-500 mt-1 line-clamp-1">
+                            プロフィールを設定すると、他のデバイスにもリアルタイムで表示されます。
+                        </p>
                     </div>
                 </div>
-                <button onclick="openProfileModal()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+                <button onclick="openProfileModal()" class="w-full sm:w-auto px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2">
                     <i data-lucide="edit-3" class="w-4 h-4"></i>
                     <span data-i18n="edit_profile_btn">プロフィール・アイコンを編集</span>
                 </button>
@@ -437,33 +440,33 @@
                 you_badge: "You",
                 edit_profile_btn: "Edit Profile & Icon",
                 filter_native: "Partner's Native Language",
-                filter_learning: "Partner Wants to Learn",
+                filter_learning: "Partner's Learning Language",
                 filter_keyword: "Keyword Search",
-                opt_all: "All Languages",
+                opt_all: "Show All",
                 lang_japanese: "Japanese",
-                lang_visayan: "Visayan (Cebuano)",
+                lang_visayan: "Visayan / Cebuano",
                 lang_english: "English",
                 search_placeholder: "Name, location, bio...",
                 partners_list_title: "Language Exchange Partners",
                 live_sync_status: "Live Sync Active",
                 modal_profile_title: "Profile Settings",
                 select_image_btn: "Select Image",
-                image_hint: "Choose a photo (JPEG, PNG, etc.) from your PC or phone for instant update",
+                image_hint: "Choose a photo (JPEG, PNG, etc.) from your PC or phone to update immediately",
                 label_name: "Name / Nickname *",
                 label_native: "Native Language *",
                 label_learning: "Language to Learn *",
                 label_location: "Location (Country / City)",
-                label_bio: "Self-Introduction / Bio",
-                save_profile_btn: "Save & Publish Profile in Real-Time",
-                quick_phrases: "Greetings:",
+                label_bio: "Self Introduction / Message",
+                save_profile_btn: "Save Profile & Publish Live",
+                quick_phrases: "Quick Phrases:",
                 chat_placeholder: "Type a message...",
                 send_btn: "Send",
                 card_native: "Native",
                 card_learning: "Learning",
-                card_message_btn: "Message",
+                card_message_btn: "Send Message",
                 no_partners: "No partners found matching your criteria.",
-                no_messages: "No messages yet. Send a friendly greeting!",
-                toast_saved: "Profile saved! Synced across devices in real-time.",
+                no_messages: "No messages yet. Say hello to start the conversation!",
+                toast_saved: "Profile saved! Synced in real-time across devices.",
                 toast_img_updated: "Profile icon updated!"
             }
         };
@@ -797,9 +800,7 @@
                 partnersList.unshift(myProfile);
             }
 
-            // ナビゲーション要素を表示状態に更新
-            document.getElementById('nav-partners-btn').classList.remove('hidden');
-            document.getElementById('nav-profile-btn').classList.remove('hidden');
+            // ヘッダーアイコンを更新
             document.getElementById('header-avatar').src = myProfile.avatar_url;
 
             updateMyBanner();
@@ -809,12 +810,17 @@
         }
 
         function updateMyBanner() {
-            if (!myProfile) return;
             const dict = i18n[currentLang];
+            if (!myProfile) {
+                document.getElementById('my-banner-name').textContent = currentLang === 'ja' ? 'ゲストユーザー（未登録）' : 'Guest User (Unregistered)';
+                document.getElementById('my-banner-langs').textContent = currentLang === 'ja' ? '「プロフィール編集」からあなたの情報を登録しましょう' : 'Register your info via "Edit Profile"';
+                return;
+            }
             document.getElementById('my-banner-avatar').src = myProfile.avatar_url;
             document.getElementById('my-banner-name').textContent = myProfile.name;
             document.getElementById('my-banner-langs').textContent =
                 `${dict.card_native}: ${formatLangLabel(myProfile.native_lang)}  /  ${dict.card_learning}: ${formatLangLabel(myProfile.learning_lang)}`;
+            document.getElementById('my-banner-bio').textContent = myProfile.bio || '';
         }
 
         // --- 8. パートナー一覧の描画 ---
@@ -1043,6 +1049,7 @@
         window.onload = async function() {
             lucide.createIcons();
             updateUIText();
+            updateMyBanner();
             await initSupabase();
             renderPartners();
         };
