@@ -220,16 +220,16 @@
                 <!-- Supabase Integration Settings Toggle Modal/Section (Specification #4) -->
                 <div class="mt-8 pt-6 border-t border-slate-200 text-center">
                     <button type="button" onclick="toggleSupabaseConfig()" class="text-xs text-slate-400 hover:text-indigo-600 underline font-medium">
-                        <i class="fa-solid fa-database"></i> Supabase連携設定 (オプション)
+                        <i class="fa-solid fa-database"></i> Supabase連携設定 (情報確認・変更)
                     </button>
                     <div id="supabaseConfigBox" class="hidden mt-4 p-4 bg-slate-900 text-white text-left rounded-2xl text-xs space-y-3">
-                        <div class="font-bold text-amber-400 flex items-center gap-2">
-                            <i class="fa-solid fa-bolt"></i> Supabase 無料データベース連携
+                        <div class="font-bold text-emerald-400 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt"></i> Supabase 無料データベース連携済み
                         </div>
-                        <p class="text-slate-300">SupabaseのプロジェクトURLとAnon Keyを入力すると実DBとリアルタイム接続できます。(未入力の場合は超高速ローカルストレージDBモードで動きます)</p>
-                        <input type="text" id="spUrl" placeholder="https://xyz company.supabase.co" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-white">
-                        <input type="text" id="spKey" placeholder="anon-public-key" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-white">
-                        <button type="button" onclick="initSupabaseFromUI()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 font-bold text-white rounded">接続を更新</button>
+                        <p class="text-slate-300">設定済みのSupabase接続情報です。必要に応じて変更可能です。</p>
+                        <input type="text" id="spUrl" placeholder="https://xyz company.supabase.co" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-white" value="https://aimzevlheldhdffcmwtr.supabase.co">
+                        <input type="text" id="spKey" placeholder="anon-public-key" class="w-full p-2 rounded bg-slate-800 border border-slate-700 text-white" value="sb_publishable_35bEOAlZLGcbdpfjzAXTZQ_y2dy6dDQ">
+                        <button type="button" onclick="initSupabaseFromUI()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 font-bold text-white rounded">接続を再更新</button>
                     </div>
                 </div>
             </div>
@@ -473,7 +473,27 @@
         // ==========================================
         // 3. SUPABASE CONFIGURATION SETUP (仕様 4)
         // ==========================================
+        const DEFAULT_SUPABASE_URL = 'https://aimzevlheldhdffcmwtr.supabase.co';
+        const DEFAULT_SUPABASE_KEY = 'sb_publishable_35bEOAlZLGcbdpfjzAXTZQ_y2dy6dDQ';
+
         let supabaseClient = null;
+
+        function initSupabase(url, key) {
+            if (url && key && window.supabase) {
+                try {
+                    supabaseClient = window.supabase.createClient(url, key);
+                    const badge = document.getElementById('supabaseStatusBadge');
+                    if (badge) {
+                        badge.innerText = 'Supabase DB 接続中';
+                        badge.className = 'text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium';
+                    }
+                    return true;
+                } catch(e) {
+                    console.error('Supabase initialization failed:', e);
+                }
+            }
+            return false;
+        }
 
         function toggleSupabaseConfig() {
             const box = document.getElementById('supabaseConfigBox');
@@ -483,15 +503,10 @@
         function initSupabaseFromUI() {
             const url = document.getElementById('spUrl').value.trim();
             const key = document.getElementById('spKey').value.trim();
-            if (url && key) {
-                try {
-                    supabaseClient = window.supabase.createClient(url, key);
-                    document.getElementById('supabaseStatusBadge').innerText = 'Supabase DB 接続中';
-                    document.getElementById('supabaseStatusBadge').className = 'text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium';
-                    showToast('Supabase に接続されました！');
-                } catch(e) {
-                    showToast('Supabaseの接続に失敗しました: ' + e.message, true);
-                }
+            if (initSupabase(url, key)) {
+                showToast('Supabase に再接続されました！');
+            } else {
+                showToast('Supabaseの接続に失敗しました', true);
             }
         }
 
@@ -797,6 +812,9 @@
 
         // Initialize on load
         window.onload = function() {
+            // Auto initialize Supabase with embedded credentials
+            initSupabase(DEFAULT_SUPABASE_URL, DEFAULT_SUPABASE_KEY);
+
             loadLocalData();
             renderPartners();
         };
