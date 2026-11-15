@@ -564,24 +564,34 @@
 
         // Supabaseから全プロフィールを取得
         async function fetchProfilesFromSupabase() {
-            if (!isSupabaseConnected) return;
-            const { data, error } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .order('updated_at', { ascending: false });
+            if (!isSupabaseConnected || !supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .order('updated_at', { ascending: false });
 
-            if (!error && data) {
-                // DBのデータとサンプルを統合（DBにデータがあれば優先）
-                partnersList = data.length > 0 ? data : [...samplePartners];
-                // 自分のプロフィールがDB側で更新されていた場合も最新に同期
-                const updatedMe = partnersList.find(p => p.id === myUserId);
-                if (updatedMe) {
-                    myProfile = updatedMe;
-                    currentAvatarDataUrl = updatedMe.avatar_url || currentAvatarDataUrl;
-                    document.getElementById('header-avatar').src = currentAvatarDataUrl;
-                    updateMyBanner();
+                if (!error && data) {
+                    // DBのデータとサンプルを統合（DBにデータがある場合はDBのデータをすべて反映し、不足分があればサンプルを補完）
+                    if (data.length > 0) {
+                        const dbIds = new Set(data.map(d => d.id));
+                        const remainingSamples = samplePartners.filter(s => !dbIds.has(s.id));
+                        partnersList = [...data, ...remainingSamples];
+                    } else {
+                        partnersList = [...samplePartners];
+                    }
+
+                    // 自分のプロフィールがDB側で更新されていた場合も最新に同期
+                    const updatedMe = partnersList.find(p => p.id === myUserId);
+                    if (updatedMe) {
+                        myProfile = updatedMe;
+                        currentAvatarDataUrl = updatedMe.avatar_url || currentAvatarDataUrl;
+                        updateMyBanner();
+                    }
+                    renderPartners();
                 }
-                renderPartners();
+            } catch (err) {
+                console.warn('Profile fetch sync error:', err);
             }
         }
 
@@ -749,7 +759,8 @@
                     // 即座にプレビューとヘッダーアイコンに反映
                     currentAvatarDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                     document.getElementById('profile-preview-img').src = currentAvatarDataUrl;
-                    document.getElementById('header-avatar').src = currentAvatarDataUrl;
+                    const headerAvatar = document.getElementById('header-avatar');
+                    if (headerAvatar) headerAvatar.src = currentAvatarDataUrl;
                     if (myProfile) {
                         document.getElementById('my-banner-avatar').src = currentAvatarDataUrl;
                     }
@@ -799,7 +810,8 @@
                 myProfile = { ...target };
                 currentAvatarDataUrl = target.avatar_url || 'https://placehold.co/150x150/0d9488/ffffff?text=ME';
                 fillProfileForm(myProfile);
-                document.getElementById('header-avatar').src = currentAvatarDataUrl;
+                const headerAvatar = document.getElementById('header-avatar');
+                if (headerAvatar) headerAvatar.src = currentAvatarDataUrl;
                 updateMyBanner();
                 renderPartners();
             }
@@ -838,48 +850,71 @@
         async function saveProfile(event) {
             event.preventDefault();
 
-            const name = document.getElementById('input-name').value.trim();
-            const native_lang = document.getElementById('input-native').value;
-            const learning_lang = document.getElementById('input-learning').value;
-            const location = document.getElementById('input-location').value.trim();
-            const bio = document.getElementById('input-bio').value.trim();
+            const saveBtn = document.getElementById('save-profile-btn');
+            const originalBtnHtml = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span><span>${currentLang === 'ja' ? '保存・リアルタイム公開中...' : 'Saving & Publishing Live...'}</span>`;
 
-            myProfile = {
-                id: myUserId,
-                name,
-                native_lang,
-                learning_lang,
-                location,
-                bio,
-                avatar_url: currentAvatarDataUrl,
-                updated_at: new Date().toISOString()
-            };
+            try {
+                const name = document.getElementById('input-name').value.trim();
+                const native_lang = document.getElementById('input-native').value;
+                const learning_lang = document.getElementById('input-learning').value;
+                const location = document.getElementById('input-location').value.trim();
+                const bio = document.getElementById('input-bio').value.trim();
 
-            // SupabaseへUpsert（リアルタイムに他デバイスへ配信される）
-            if (isSupabaseConnected) {
-                const { error } = await supabaseClient
-                    .from('profiles')
-                    .upsert(myProfile, { onConflict: 'id' });
-                if (error) {
-                    console.error('Error saving profile to Supabase:', error);
+                const profilePayload = {
+                    id: myUserId,
+                    name,
+                    native_lang,
+                    learning_lang,
+                    location,
+                    bio,
+                    avatar_url: currentAvatarDataUrl,
+                    updated_at: new Date().toISOString()
+                };
+
+                myProfile = { ...profilePayload };
+
+                // SupabaseへUpsertし、保存された最新レコードを取得してリアルタイム公開を確定
+                if (isSupabaseConnected && supabaseClient) {
+                    const { data, error } = await supabaseClient
+                        .from('profiles')
+                        .upsert(profilePayload, { onConflict: 'id' })
+                        .select();
+
+                    if (error) {
+                        console.error('Error saving profile to Supabase:', error);
+                        showToast(currentLang === 'ja'
+                            ? 'DB保存エラー: SupabaseのSQL設定（profilesテーブル・RLS）を確認してください'
+                            : 'Database save error: Please check Supabase table & RLS policies.');
+                    } else if (data && data.length > 0) {
+                        myProfile = data[0];
+                    }
                 }
+
+                // ローカルのリストにも即反映（先頭に配置して公開状態にする）
+                const existingIdx = partnersList.findIndex(p => p.id === myUserId);
+                if (existingIdx > -1) {
+                    partnersList[existingIdx] = myProfile;
+                } else {
+                    partnersList.unshift(myProfile);
+                }
+
+                updateMyBanner();
+                renderPartners();
+                closeProfileModal();
+                navigateTo('partners');
+                showToast(i18n[currentLang].toast_saved);
+
+                // 公開直後に最新データを再取得して全デバイスと同期
+                if (isSupabaseConnected) {
+                    await fetchProfilesFromSupabase();
+                }
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnHtml;
+                lucide.createIcons();
             }
-
-            // ローカルのリストにも即反映
-            const existingIdx = partnersList.findIndex(p => p.id === myUserId);
-            if (existingIdx > -1) {
-                partnersList[existingIdx] = myProfile;
-            } else {
-                partnersList.unshift(myProfile);
-            }
-
-            // ヘッダーアイコンを更新
-            document.getElementById('header-avatar').src = myProfile.avatar_url;
-
-            updateMyBanner();
-            closeProfileModal();
-            navigateTo('partners');
-            showToast(i18n[currentLang].toast_saved);
         }
 
         function updateMyBanner() {
