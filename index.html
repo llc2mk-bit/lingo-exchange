@@ -828,9 +828,14 @@
             document.getElementById('profile-preview-img').src = avatar;
         }
 
-        function openProfileModal(isFirstTime = false) {
+        async function openProfileModal(isFirstTime = false) {
             const modal = document.getElementById('profile-modal');
             modal.classList.remove('hidden');
+
+            // 編集モーダルを開く前に最新のプロフィール一覧を同期
+            if (isSupabaseConnected) {
+                await fetchProfilesFromSupabase();
+            }
 
             // 既存のプロフィール候補リストを最新化
             populateExistingProfileSelector();
@@ -838,8 +843,11 @@
             // すでに自分のプロフィールが作成済みの場合はフォームに現在の内容をセットして表示
             const currentMine = myProfile || partnersList.find(p => p.id === myUserId);
             if (currentMine) {
-                myProfile = currentMine;
-                fillProfileForm(currentMine);
+                myProfile = { ...currentMine };
+                myUserId = currentMine.id;
+                fillProfileForm(myProfile);
+                const select = document.getElementById('select-existing-profile');
+                if (select) select.value = myProfile.id;
             }
         }
 
