@@ -63,7 +63,7 @@
             <!-- ナビゲーション & 言語切り替え -->
             <div class="flex items-center gap-2 sm:gap-4">
                 <!-- パートナー一覧ボタン（常に表示） -->
-                <button onclick="navigateTo('partners')" id="nav-partners-btn" class="text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5">
+                <button type="button" onclick="openPartnersDirectory()" id="nav-partners-btn" class="text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5">
                     <i data-lucide="users" class="w-4 h-4 text-teal-600"></i>
                     <span data-i18n="nav_partners">パートナーを探す</span>
                 </button>
@@ -712,6 +712,25 @@
         }
 
         // --- 5. 画面遷移と初回登録フロー ---
+        async function openPartnersDirectory() {
+            // フィルターを初期状態（すべて表示）にリセットして確実に一覧表示する
+            const filterNative = document.getElementById('filter-native');
+            const filterLearning = document.getElementById('filter-learning');
+            const filterKeyword = document.getElementById('filter-keyword');
+            if (filterNative) filterNative.value = 'all';
+            if (filterLearning) filterLearning.value = 'all';
+            if (filterKeyword) filterKeyword.value = '';
+
+            navigateTo('partners');
+
+            if (isSupabaseConnected) {
+                await fetchProfilesFromSupabase();
+            } else if (partnersList.length === 0) {
+                partnersList = [...samplePartners];
+                renderPartners();
+            }
+        }
+
         function navigateTo(view) {
             document.getElementById('view-landing').classList.add('hidden');
             document.getElementById('view-partners').classList.add('hidden');
@@ -720,6 +739,9 @@
                 document.getElementById('view-landing').classList.remove('hidden');
             } else if (view === 'partners') {
                 document.getElementById('view-partners').classList.remove('hidden');
+                if (partnersList.length === 0) {
+                    partnersList = [...samplePartners];
+                }
                 renderPartners();
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
