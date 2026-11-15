@@ -871,40 +871,6 @@
             }
         }
 
-        function fillProfileForm(profile) {
-            document.getElementById('input-name').value = profile.name || '';
-            document.getElementById('input-native').value = profile.native_lang || 'Japanese';
-            document.getElementById('input-learning').value = profile.learning_lang || 'Visayan';
-            document.getElementById('input-location').value = profile.location || '';
-            document.getElementById('input-bio').value = profile.bio || '';
-            const avatar = profile.avatar_url || currentAvatarDataUrl;
-            currentAvatarDataUrl = avatar;
-            document.getElementById('profile-preview-img').src = avatar;
-        }
-
-        async function openProfileModal(isFirstTime = false) {
-            const modal = document.getElementById('profile-modal');
-            modal.classList.remove('hidden');
-
-            // 編集モーダルを開く前に最新のプロフィール一覧を同期
-            if (isSupabaseConnected) {
-                await fetchProfilesFromSupabase();
-            }
-
-            // 既存のプロフィール候補リストを最新化
-            populateExistingProfileSelector();
-
-            // すでに自分のプロフィールが作成済みの場合はフォームに現在の内容をセットして表示
-            const currentMine = myProfile || partnersList.find(p => p.id === myUserId);
-            if (currentMine) {
-                myProfile = { ...currentMine };
-                myUserId = currentMine.id;
-                fillProfileForm(myProfile);
-                const select = document.getElementById('select-existing-profile');
-                if (select) select.value = myProfile.id;
-            }
-        }
-
         function closeProfileModal() {
             document.getElementById('profile-modal').classList.add('hidden');
         }
