@@ -968,39 +968,35 @@
             const dict = i18n[currentLang];
 
             const filtered = partnersList.filter(p => {
-                // 自分自身は一覧から除外（バナーに表示されているため）
-                if (p.id === myUserId) return false;
                 if (filterNative !== 'all' && p.native_lang !== filterNative) return false;
                 if (filterLearning !== 'all' && p.learning_lang !== filterLearning) return false;
                 if (keyword) {
-                    const matchName = (p.name || '').toLowerCase().includes(keyword);
-                    const matchLoc = (p.location || '').toLowerCase().includes(keyword);
-                    const matchBio = (p.bio || '').toLowerCase().includes(keyword);
-                    if (!matchName && !matchLoc && !matchBio) return false;
-                }
-                return true;
-            });
-
-            document.getElementById('partners-count').textContent = filtered.length;
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-slate-200 text-slate-500">
-                        ${dict.no_partners}
-                    </div>
-                `;
-                return;
-            }
-
+// ... existing code ... -->
             grid.innerHTML = filtered.map(partner => {
+                const isMe = partner.id === myUserId;
                 const avatar = partner.avatar_url || `https://placehold.co/150x150/64748b/ffffff?text=${encodeURIComponent(partner.name.charAt(0))}`;
+                const cardBorderClass = isMe ? 'border-2 border-teal-500 ring-2 ring-teal-500/10' : 'border border-slate-200/80';
+                const youBadgeHtml = isMe ? `<span class="text-[11px] px-2 py-0.5 bg-teal-100 text-teal-800 font-bold rounded-full shrink-0">${dict.you_badge}</span>` : '';
+                const actionBtnHtml = isMe
+                    ? `<button onclick="openProfileModal()" class="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            <span>${dict.edit_profile_btn}</span>
+                       </button>`
+                    : `<button onclick="openChatModal('${partner.id}')" class="w-full py-3 bg-slate-900 hover:bg-teal-600 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
+                            <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            <span>${dict.card_message_btn}</span>
+                       </button>`;
+
                 return `
-                    <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md border border-slate-200/80 transition-all flex flex-col justify-between">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm hover:shadow-md ${cardBorderClass} transition-all flex flex-col justify-between">
                         <div>
                             <div class="flex items-center gap-4 mb-4">
                                 <img src="${avatar}" onerror="this.src='https://placehold.co/150x150/cbd5e1/475569?text=User'" alt="${escapeHtml(partner.name)}" class="w-16 h-16 rounded-full object-cover border-2 border-slate-100 shadow-sm shrink-0">
-                                <div class="min-w-0">
-                                    <h4 class="font-bold text-slate-900 text-lg truncate">${escapeHtml(partner.name)}</h4>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-bold text-slate-900 text-lg truncate">${escapeHtml(partner.name)}</h4>
+                                        ${youBadgeHtml}
+                                    </div>
                                     <p class="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
                                         <i data-lucide="map-pin" class="w-3.5 h-3.5 text-teal-600 shrink-0"></i>
                                         <span>${escapeHtml(partner.location || 'Japan / Philippines')}</span>
@@ -1026,11 +1022,8 @@
                             </p>
                         </div>
 
-                        <!-- メッセージボタン -->
-                        <button onclick="openChatModal('${partner.id}')" class="w-full py-3 bg-slate-900 hover:bg-teal-600 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm">
-                            <i data-lucide="message-circle" class="w-4 h-4"></i>
-                            <span>${dict.card_message_btn}</span>
-                        </button>
+                        <!-- アクションボタン -->
+                        ${actionBtnHtml}
                     </div>
                 `;
             }).join('');
