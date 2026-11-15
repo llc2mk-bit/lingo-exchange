@@ -268,10 +268,9 @@
             <div id="existing-profile-loader" class="mb-5 bg-blue-50/70 border border-blue-100 rounded-2xl p-3.5">
                 <label class="block text-xs font-bold text-blue-900 mb-1.5 flex items-center gap-1.5">
                     <i data-lucide="user-check" class="w-4 h-4 text-blue-600"></i>
-                    <span data-i18n="load_existing_label">作成済みのプロフィールを読み込んで編集する:</span>
+                    <span data-i18n="load_existing_label">編集する自分のプロフィールを選択（上書き編集）:</span>
                 </label>
                 <select id="select-existing-profile" onchange="loadSelectedProfile(this.value)" class="w-full rounded-xl border border-blue-200 px-3 py-2 text-xs sm:text-sm bg-white text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="" data-i18n="load_existing_placeholder">-- 新規作成 または 自分の名前を選択 --</option>
                 </select>
             </div>
 
@@ -423,8 +422,8 @@
                 label_location: "居住地（国・都市）",
                 label_bio: "自己紹介・メッセージ",
                 save_profile_btn: "プロフィールを保存してリアルタイム公開",
-                load_existing_label: "作成済みのプロフィールを読み込んで編集する:",
-                load_existing_placeholder: "-- 新規作成 または 自分の名前を選択 --",
+                load_existing_label: "編集する自分のプロフィールを選択（上書き編集）:",
+                load_existing_placeholder: "-- 新規作成 --",
                 quick_phrases: "挨拶例:",
                 chat_placeholder: "メッセージを入力...",
                 send_btn: "送信",
@@ -465,8 +464,8 @@
                 label_location: "Location (Country / City)",
                 label_bio: "Self Introduction / Message",
                 save_profile_btn: "Save Profile & Publish Live",
-                load_existing_label: "Load an existing profile to edit:",
-                load_existing_placeholder: "-- Create New or Select Your Name --",
+                load_existing_label: "Select your profile to edit & overwrite:",
+                load_existing_placeholder: "-- Create New Profile --",
                 quick_phrases: "Quick Phrases:",
                 chat_placeholder: "Type a message...",
                 send_btn: "Send",
@@ -572,6 +571,8 @@
                     .order('updated_at', { ascending: false });
 
                 if (!error && data) {
+                    const sampleIds = new Set(samplePartners.map(s => s.id));
+
                     // DBのデータとサンプルを統合（DBにデータがある場合はDBのデータをすべて反映し、不足分があればサンプルを補完）
                     if (data.length > 0) {
                         const dbIds = new Set(data.map(d => d.id));
@@ -581,10 +582,18 @@
                         partnersList = [...samplePartners];
                     }
 
-                    // 自分のプロフィールがDB側で更新されていた場合も最新に同期
-                    const updatedMe = partnersList.find(p => p.id === myUserId);
+                    // 自分のプロフィールがDB側にある場合は確実に紐付けて同期（リロード直後でも自分の作成済みプロフィールを自動復元）
+                    let updatedMe = partnersList.find(p => p.id === myUserId);
+                    if (!updatedMe && !myProfile) {
+                        const userCreatedProfiles = data.filter(p => !sampleIds.has(p.id));
+                        if (userCreatedProfiles.length > 0) {
+                            updatedMe = userCreatedProfiles[0];
+                            myUserId = updatedMe.id;
+                        }
+                    }
+
                     if (updatedMe) {
-                        myProfile = updatedMe;
+                        myProfile = { ...updatedMe };
                         currentAvatarDataUrl = updatedMe.avatar_url || currentAvatarDataUrl;
                         updateMyBanner();
                     }
@@ -772,11 +781,13 @@
         }
 
         // --- 7. プロフィール編集・Supabase保存 ---
-        function populateExistingProfileSelector() {
+        function populateExistingProfileSelector(allowCreateNew = true) {
             const select = document.getElementById('select-existing-profile');
             if (!select) return;
             const dict = i18n[currentLang];
-            select.innerHTML = `<option value="">${dict.load_existing_placeholder}</option>`;
+            select.innerHTML = allowCreateNew
+                ? `<option value="">${dict.load_existing_placeholder}</option>`
+                : '';
 
             partnersList.forEach(p => {
                 const option = document.createElement('option');
@@ -814,6 +825,49 @@
                 if (headerAvatar) headerAvatar.src = currentAvatarDataUrl;
                 updateMyBanner();
                 renderPartners();
+            }
+        }
+
+        function fillProfileForm(profile) {
+            document.getElementById('input-name').value = profile.name || '';
+            document.getElementById('input-native').value = profile.native_lang || 'Japanese';
+            document.getElementById('input-learning').value = profile.learning_lang || 'Visayan';
+            document.getElementById('input-location').value = profile.location || '';
+            document.getElementById('input-bio').value = profile.bio || '';
+            const avatar = profile.avatar_url || currentAvatarDataUrl;
+            currentAvatarDataUrl = avatar;
+            document.getElementById('profile-preview-img').src = avatar;
+        }
+
+        async function openProfileModal(isFirstTime = false) {
+            const modal = document.getElementById('profile-modal');
+            modal.classList.remove('hidden');
+
+            // 編集モーダルを開く前に最新のプロフィール一覧を同期
+            if (isSupabaseConnected) {
+                await fetchProfilesFromSupabase();
+            }
+
+            // すでに作成済みのプロフィールを特定（新規IDを発行せず既存のID・データを維持）
+            const sampleIds = new Set(samplePartners.map(s => s.id));
+            let targetProfile = myProfile || partnersList.find(p => p.id === myUserId);
+
+            if (!targetProfile) {
+                // 画面リロード後などでメモリ上のmyProfileが空の場合でも、DBに保存された作成済みプロフィールを自動検出
+                targetProfile = partnersList.find(p => !sampleIds.has(p.id)) || null;
+            }
+
+            if (targetProfile) {
+                // 既存プロフィール編集モード：新規作成オプションを出さず、作成済みプロフィールを確実に読み込む
+                myProfile = { ...targetProfile };
+                myUserId = targetProfile.id;
+                populateExistingProfileSelector(false);
+                fillProfileForm(myProfile);
+                const select = document.getElementById('select-existing-profile');
+                if (select) select.value = myProfile.id;
+            } else {
+                // まだ一度も作成されていない初回登録時のみ新規入力フォームを表示
+                populateExistingProfileSelector(true);
             }
         }
 
