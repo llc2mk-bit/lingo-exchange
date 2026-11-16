@@ -279,18 +279,21 @@
     <div id="sqlModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] p-6 flex flex-col shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-slate-900 text-lg">Supabase SQL クエリ設定ガイド</h3>
+                <h3 class="font-bold text-slate-900 text-lg">Supabase SQL セットアップ・解説</h3>
                 <button onclick="closeSqlModal()" class="text-slate-400 hover:text-slate-600">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
             <p class="text-xs text-slate-600 mb-3">
-                Supabaseの Dashboard -> SQL Editor にて下記を実行してテーブルとリアルタイム同期を設定してください。
+                Supabaseのダッシュボードメニュー <strong>SQL Editor</strong> を開き、以下のクエリを貼り付けて <strong>Run</strong> を実行してください。プロフィール同期とリアルタイムメッセージ機能が有効化されます。
             </p>
             <div class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono overflow-auto flex-1 chat-scroll relative">
-                <button onclick="copySqlQuery()" class="absolute top-2 right-2 px-2 py-1 bg-slate-700 text-white text-[10px] rounded hover:bg-slate-600">コピー</button>
+                <button onclick="copySqlQuery()" class="absolute top-2 right-2 px-3 py-1 bg-indigo-600 text-white text-[11px] font-bold rounded-lg hover:bg-indigo-500 shadow">コピー</button>
                 <pre id="sqlCodeBlock">
--- 1. プロフィールテーブル作成
+-- ==========================================
+-- 1. ユーザープロフィール用テーブル (profiles)
+-- ==========================================
+-- ユーザーID、名前、母国語、学習言語、自己紹介、アイコン画像URLを保持します
 CREATE TABLE IF NOT EXISTS profiles (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -301,7 +304,10 @@ CREATE TABLE IF NOT EXISTS profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 2. メッセージテーブル作成
+-- ==========================================
+-- 2. リアルタイムメッセージ用テーブル (messages)
+-- ==========================================
+-- 送信者/受信者IDとチャット本文、送信日時を記録します
 CREATE TABLE IF NOT EXISTS messages (
     id BIGSERIAL PRIMARY KEY,
     sender_id TEXT NOT NULL,
@@ -310,19 +316,26 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 3. RLS（Row Level Security）ポリシーの無効化（パブリックデモ用）
+-- ==========================================
+-- 3. Row Level Security (RLS) アクセス制御設定
+-- ==========================================
+-- すべてのユーザーがデータの読み書き（交流）を行えるよう全許可ポリシーを設定します
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow all public read/write for profiles" ON profiles FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all public read/write for messages" ON messages FOR ALL USING (true) WITH CHECK (true);
 
--- 4. リアルタイム配信（Realtime）設定
+-- ==========================================
+-- 4. Realtime（リアルタイム同期）の有効化
+-- ==========================================
+-- 他のデバイスやブラウザで即座にメッセージが更新されるよう設定します
 ALTER PUBLICATION supabase_realtime ADD TABLE profiles;
 ALTER PUBLICATION supabase_realtime ADD TABLE messages;
                 </pre>
             </div>
-            <div class="mt-4 flex justify-end">
+            <div class="mt-4 flex justify-between items-center">
+                <span class="text-[11px] text-slate-400">※ボタンを押すとSQL全文がコピーされます</span>
                 <button onclick="closeSqlModal()" class="px-4 py-2 bg-slate-800 text-white text-xs rounded-lg font-bold">閉じる</button>
             </div>
         </div>
@@ -775,9 +788,24 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
         }
         function copySqlQuery() {
             const code = document.getElementById('sqlCodeBlock').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                alert('SQLクエリをクリップボードにコピーしました！');
-            });
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('SQLクエリをクリップボードにコピーしました！');
+                }).catch(() => {
+                    fallbackCopyText(code);
+                });
+            } else {
+                fallbackCopyText(code);
+            }
+        }
+        function fallbackCopyText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('SQLクエリをクリップボードにコピーしました！');
         }
 
         /* ユーティリティ */
