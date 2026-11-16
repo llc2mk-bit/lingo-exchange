@@ -470,6 +470,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
             loadLocalProfile();
             updateLanguageUI();
             fetchProfiles();
+            setupRealtimeSubscriptions();
 
             // BroadcastChannel によるタブ/デバイス間リアルタイム同期のシミュレーション
             broadcastChannel.onmessage = (event) => {
@@ -631,6 +632,48 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 
             allProfiles = profiles;
             renderMemberList();
+        }
+
+        /* -------------------------------------------------------------
+         * 8.5. Supabase リアルタイム同期設定 (他のデバイスで登録されたプロフィールの即時反映)
+         * ------------------------------------------------------------- */
+        function setupRealtimeSubscriptions() {
+            if (!supabaseClient) return;
+
+            try {
+                // 他のデバイスでプロフィールが登録・更新されたときに自動検知
+                supabaseClient
+                    .channel('public:profiles')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (payload) => {
+                        const newOrUpdatedProfile = payload.new;
+                        if (!newOrUpdatedProfile || !newOrUpdatedProfile.id) return;
+
+                        const idx = allProfiles.findIndex(p => p.id === newOrUpdatedProfile.id);
+                        if (idx >= 0) {
+                            allProfiles[idx] = newOrUpdatedProfile;
+                        } else {
+                            allProfiles.unshift(newOrUpdatedProfile);
+                        }
+                        renderMemberList();
+                    })
+                    .subscribe();
+
+                // 他のデバイスからメッセージを受信したときのリアルタイム検知
+                supabaseClient
+                    .channel('public:messages')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                        const newMsg = payload.new;
+                        if (activeChatPartnerId && (newMsg.sender_id === activeChatPartnerId || newMsg.receiver_id === activeChatPartnerId)) {
+                            // 自分が送信したものでなければ画面に追加（重なり防止）
+                            if (newMsg.sender_id !== myUserId) {
+                                appendChatMessage(newMsg);
+                            }
+                        }
+                    })
+                    .subscribe();
+            } catch (err) {
+                console.warn("Realtime subscription setup failed:", err);
+            }
         }
 
         function renderMemberList() {
