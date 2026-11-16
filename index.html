@@ -467,7 +467,12 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
         function initSupabase() {
             try {
                 if (window.supabase && typeof window.supabase.createClient === 'function') {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    // Canvas環境などのWebSocket接続禁止によるSecurityErrorを抑止するため、realtime設定を無効化して初期化
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                        realtime: {
+                            enabled: false
+                        }
+                    });
                 }
             } catch (e) {
                 console.warn("Supabase初期化警告:", e);
@@ -802,26 +807,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
          * 9. リアルタイム同期 & セーフティ・ポーリングフォールバック
          * ------------------------------------------------------------- */
         function setupRealtimeSubscriptions() {
-            if (!supabaseClient) return;
-
-            try {
-                realTimeChannel = supabaseClient.channel('public_changes')
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-                        fetchProfiles();
-                    })
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-                        if (activeChatPartnerId && (payload.new.sender_id === activeChatPartnerId || payload.new.receiver_id === activeChatPartnerId)) {
-                            loadChatHistory();
-                        }
-                    })
-                    .subscribe((status, err) => {
-                        if (status === 'CHANNEL_ERROR' || err) {
-                            startPollingFallback();
-                        }
-                    });
-            } catch(e) {
-                startPollingFallback();
-            }
+            // WebSockets in Canvas throw SecurityError; use continuous HTTP polling for zero-error real-time experience
+            startPollingFallback();
         }
 
         function startPollingFallback() {
@@ -831,7 +818,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
                 if (activeChatPartnerId) {
                     loadChatHistory();
                 }
-            }, 5000);
+            }, 4000);
         }
 
         /* -------------------------------------------------------------
