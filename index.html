@@ -452,6 +452,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
         let allProfiles = [];
         let activeChatPartnerId = null;
         let realTimeChannel = null;
+        let pollingTimer = null;
 
         /* -------------------------------------------------------------
          * 3. Supabase クライアント初期化 (安全なエラーハンドリング)
@@ -670,6 +671,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
         function setupRealtimeSubscriptions() {
             if (!supabaseClient) return;
 
+            // WebSocket接続試行 (Canvasやiframe環境のWebSocket制限エラーを捕捉して安全に処理)
             try {
                 if (realTimeChannel) {
                     supabaseClient.removeChannel(realTimeChannel);
@@ -698,10 +700,28 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
                             appendMessageUI(newMsg);
                         }
                     })
-                    .subscribe();
+                    .subscribe((status, err) => {
+                        if (status === 'CHANNEL_ERROR' || err) {
+                            console.warn("WebSocket接続不可のためポーリングモードにフォールバックします");
+                            startPollingFallback();
+                        }
+                    });
             } catch (e) {
-                console.warn("Realtime設定エラー:", e);
+                console.warn("WebSocket SecurityRestriction Detected. Switching to HTTP Polling:", e);
+                startPollingFallback();
             }
+        }
+
+        // WebSocketがブロックされる環境用の定期自動データ取得（ポーリングフォールバック）
+        function startPollingFallback() {
+            if (pollingTimer) clearInterval(pollingTimer);
+            pollingTimer = setInterval(async () => {
+                await fetchProfiles();
+                renderMemberList();
+                if (activeChatPartnerId) {
+                    loadChatHistory(activeChatPartnerId, true);
+                }
+            }, 5000); // 5秒ごとに更新チェック
         }
 
         /* -------------------------------------------------------------
@@ -803,10 +823,12 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
             activeChatPartnerId = null;
         }
 
-        async function loadChatHistory(partnerId) {
+        async function loadChatHistory(partnerId, isPolling = false) {
             const msgContainer = document.getElementById('chatMessages');
-            msgContainer.innerHTML = '';
-            activeMessages = [];
+            if (!isPolling) {
+                msgContainer.innerHTML = '';
+                activeMessages = [];
+            }
 
             if (supabaseClient) {
                 try {
@@ -817,15 +839,21 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
                         .order('created_at', { ascending: true });
 
                     if (!error && data) {
-                        activeMessages = data;
+                        // 新しいメッセージがある場合のみレンダリングを更新
+                        if (data.length !== activeMessages.length) {
+                            msgContainer.innerHTML = '';
+                            activeMessages = data;
+                            activeMessages.forEach(msg => appendMessageUI(msg));
+                            scrollToBottomChat();
+                        }
+                        return;
                     }
                 } catch (e) {
                     console.warn("メッセージ履歴の読み込み失敗:", e);
                 }
             }
 
-            // デモ用の初期メッセージ（データがない場合）
-            if (activeMessages.length === 0) {
+            if (!isPolling && activeMessages.length === 0) {
                 activeMessages = [
                     {
                         sender_id: partnerId,
@@ -834,10 +862,9 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
                         created_at: new Date(Date.now() - 3600000).toISOString()
                     }
                 ];
+                activeMessages.forEach(msg => appendMessageUI(msg));
+                scrollToBottomChat();
             }
-
-            activeMessages.forEach(msg => appendMessageUI(msg));
-            scrollToBottomChat();
         }
 
         async function handleSendMessage(e) {
@@ -855,13 +882,18 @@ ALTER PUBLICATION supabase_realtime ADD TABLE messages;
 
             input.value = '';
             appendMessageUI(newMsg);
+            activeMessages.push(newMsg);
             scrollToBottomChat();
 
             if (supabaseClient) {
                 try {
-                    await supabaseClient.from('messages').insert([newMsg]);
+                    await supabaseClient.from('messages').insert({
+                        sender_id: newMsg.sender_id,
+                        receiver_id: newMsg.receiver_id,
+                        content: newMsg.content
+                    });
                 } catch (err) {
-                    console.warn("メッセージ送信エラー:", err);
+                    console.warn("メッセージの送信失敗:", err);
                 }
             }
         }
